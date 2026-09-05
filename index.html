@@ -1,0 +1,3205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>HappeeChat3</title>
+<link rel="icon" type="image/svg+xml" href="https://file.garden/ZfeUWQ_uZRgXD5Ma/backdrop1.svg" />
+<!-- Poppins font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Make group modal inputs white text */
+#group-title, #group-icon-file {
+  color: #fff;
+}
+  :root{
+    --bg:#0b0e12;
+    --panel:#0f1419;
+    --muted:#8b97a6;
+    --accent:#4da3ff;
+    --contrast:#12161a;
+    --bubble:#0e1317;
+    --mention:#f5d35b;
+    --mention-text:#1a1a1a;
+    --max-width:1200px;
+    font-family: 'Poppins', sans-serif;
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#071017 0%, #04060a 100%);color:#e6eef6}
+  .app {
+    max-width:var(--max-width);
+    margin:18px auto;
+    height:88vh;
+    display:flex;
+    gap:12px;
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 10px 30px rgba(0,0,0,0.6);
+  }
+  /* Middle column (users list / chats) */
+  .middle {
+    width:260px;
+    background:var(--panel);
+    padding:12px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    box-sizing:border-box;
+  }
+  .chat-list {overflow:auto;flex:1;padding-top:6px}
+  .chat-item {display:flex;gap:8px;align-items:center;padding:8px;border-radius:8px;cursor:pointer}
+  .chat-item:hover{background:rgba(255,255,255,0.02)}
+  .chat-item img {width:44px;height:44px;border-radius:8px;object-fit:cover}
+  .chat-item .meta {display:flex;flex-direction:column}
+  .chat-item .meta .name {font-weight:600}
+  .unread-count {margin-left:auto;background:#2b6aab;padding:4px 6px;border-radius:6px;font-size:12px}
+  /* Right column (messages) */
+  .right {
+    flex:1;
+    background:linear-gradient(180deg,var(--contrast),#081017);
+    display:flex;flex-direction:column;padding:12px;box-sizing:border-box;
+  }
+  .header {
+    display:flex;align-items:center;gap:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.02);
+  }
+  .mobile-chat-toggle{display:none}
+  .header .title {font-size:18px;font-weight:700}
+  .header .controls {margin-left:auto;display:flex;gap:8px;align-items:center}
+  .btn {background:var(--accent);color:#06121a;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
+  .btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(255,255,255,0.04)}
+  .read-btn{background:#334153;color:white;padding:6px 8px;border-radius:8px}
+  .volume {display:flex;align-items:center;gap:8px}
+  .volume input[type=range]{width:120px}
+  .messages {flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:12px}
+  .message {display:flex;gap:12px;align-items:flex-start;padding:8px;border-radius:8px;background:transparent;transition:background 120ms}
+  .message:hover{background:rgba(255,255,255,0.01)}
+  .message .avatar {width:48px;height:48px;border-radius:8px;object-fit:cover}
+  .message .body {flex:1}
+  .message .meta {display:flex;gap:8px;align-items:center}
+  .message .username{font-weight:700}
+  .message .text{margin-top:6px;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
+  .message .text a{overflow-wrap:anywhere;word-break:break-word}
+  .message .timestamp{font-size:11px;color:var(--muted);margin-left:auto}
+  .message-actions{display:flex;gap:6px;margin-top:8px}
+  .message-action-btn{background:rgba(255,255,255,0.06);color:var(--muted);padding:6px 10px;border-radius:8px;border:none;cursor:pointer;font-size:12px}
+  .message-action-btn:hover{background:rgba(255,255,255,0.12);color:#fff}
+  .message-footer{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+  .reactions{display:flex;flex-wrap:wrap;gap:6px}
+  .reaction-btn{background:rgba(255,255,255,0.05);color:#e6eef6;border:1px solid rgba(255,255,255,0.06);border-radius:999px;padding:5px 10px;font-size:13px;cursor:pointer}
+  .reaction-btn.active{background:rgba(77,163,255,0.18);border-color:rgba(77,163,255,0.45)}
+  .reaction-add-wrap{position:relative}
+  .reaction-picker{position:absolute;left:0;top:calc(100% + 8px);display:none;gap:6px;flex-wrap:wrap;min-width:220px;padding:10px;border-radius:12px;background:#0a1117;border:1px solid rgba(255,255,255,0.06);box-shadow:0 16px 36px rgba(0,0,0,0.35);z-index:30}
+  .reaction-picker.open{display:flex}
+  .reaction-picker-btn{background:rgba(255,255,255,0.05);border:none;border-radius:10px;padding:8px 10px;cursor:pointer;font-size:18px}
+  .reaction-picker-btn:hover{background:rgba(255,255,255,0.12)}
+  .mention {background:var(--mention);color:var(--mention-text);padding:2px 6px;border-radius:6px}
+  .atlink {color:var(--accent);font-weight:700}
+  .file-embed {margin-top:8px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.03);padding:6px;background: #070a0c}
+  .embed-frame{margin-top:8px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);background:#05080b;aspect-ratio:16/9}
+  .embed-frame iframe{width:100%;height:100%;border:0;display:block}
+  .embed-frame.soundcloud{aspect-ratio:auto;height:300px}
+  .poll-card{margin-top:10px;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.03)}
+  .poll-title{font-weight:700;margin-bottom:10px;overflow-wrap:anywhere}
+  .poll-options{display:flex;flex-direction:column;gap:8px}
+  .poll-option{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.04);color:#fff;cursor:pointer;text-align:left}
+  .poll-option.active{border-color:rgba(77,163,255,0.55);background:rgba(77,163,255,0.18)}
+  .poll-option-text{overflow-wrap:anywhere;word-break:break-word}
+  .poll-meta{font-size:12px;color:var(--muted);margin-top:8px}
+  .input-row {display:flex;gap:8px;align-items:center;padding-top:8px;border-top:1px solid rgba(255,255,255,0.02);position:relative}
+  .input-row textarea{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit;min-height:44px;max-height:120px;resize:none}
+  .input-row .add-btn{width:44px;height:44px;border-radius:8px;border:1px dashed rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;color:#fff}
+  .composer-plus-wrap{position:relative}
+  .composer-menu{position:absolute;left:0;bottom:calc(100% + 8px);display:none;flex-direction:column;gap:6px;min-width:170px;padding:10px;border-radius:12px;background:#0a1117;border:1px solid rgba(255,255,255,0.06);box-shadow:0 16px 36px rgba(0,0,0,0.35);z-index:35}
+  .composer-menu.open{display:flex}
+  .composer-menu button{background:rgba(255,255,255,0.05);color:#fff;border:none;border-radius:10px;padding:10px 12px;cursor:pointer;text-align:left}
+  .composer-menu button:hover{background:rgba(255,255,255,0.12)}
+  .emoji-wrap{position:relative}
+  .emoji-btn{width:44px;height:44px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;background:transparent;color:#fff;cursor:pointer;font-size:20px}
+  .emoji-picker{position:absolute;right:0;bottom:calc(100% + 10px);display:none;grid-template-columns:repeat(5,1fr);gap:8px;padding:12px;border-radius:14px;background:#0a1117;border:1px solid rgba(255,255,255,0.06);box-shadow:0 16px 36px rgba(0,0,0,0.35);z-index:35;min-width:248px}
+  .emoji-picker.open{display:grid}
+  .emoji-option{background:rgba(255,255,255,0.05);border:none;border-radius:10px;padding:10px;cursor:pointer;font-size:20px}
+  .emoji-option:hover{background:rgba(255,255,255,0.12)}
+  .small {font-size:12px;color:var(--muted)}
+  .login-overlay{position:absolute;inset:0;background:linear-gradient(180deg, rgba(3,6,9,0.6), rgba(3,6,9,0.9));display:flex;align-items:center;justify-content:center;z-index:9999}
+  .login-box{width:760px;background:linear-gradient(180deg,#07101a,#081218);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;gap:12px;box-sizing:border-box}
+  .create-form{display:flex;flex-direction:column;gap:8px}
+  .account {display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;cursor:pointer}
+  .account:hover{background:rgba(255,255,255,0.02)}
+  .account img{width:48px;height:48px;border-radius:8px;object-fit:cover}
+  input,button,select,textarea{font-family:inherit}
+  .danger{background:#ff6b6b;color:white}
+  .admin-delete {margin-left:auto;background:#7b2634;color:#fff;padding:6px;border-radius:8px;border:none;cursor:pointer}
+  .no-messages {text-align:center;color:var(--muted);margin-top:24px}
+  /* highlight for mention */
+  .mentioned {background:linear-gradient(90deg,#3b2b03,#5a4710);border-radius:8px}
+  /* small adjustments for responsiveness */
+  .mobile-sidebar-backdrop{display:none}
+  body.mobile-chats-open .mobile-sidebar-backdrop{display:none}
+  @media(max-width:900px){
+    .app{height:100dvh;max-width:none;margin:0;border-radius:0;position:relative}
+    .mobile-chat-toggle{display:inline-flex}
+    .login-box{width:94%}
+    .right{padding:10px}
+    .header{padding-bottom:10px}
+    .header .title{font-size:16px}
+    .header .controls{gap:6px;flex-wrap:wrap;justify-content:flex-end}
+    .messages{padding:10px 4px 10px 0}
+    .message{gap:10px;padding:10px 6px}
+    .message .avatar{width:40px;height:40px}
+    .input-row{position:sticky;bottom:0;background:linear-gradient(180deg,rgba(8,16,23,0.92),#081017);padding:10px 0 calc(10px + env(safe-area-inset-bottom))}
+    .middle{display:flex;position:absolute;inset:0 auto 0 0;width:min(82vw,320px);max-width:320px;z-index:45;transform:translateX(-105%);transition:transform 180ms ease;box-shadow:0 18px 38px rgba(0,0,0,0.42)}
+    body.mobile-chats-open .middle{transform:translateX(0)}
+    .mobile-sidebar-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.45);z-index:40}
+    body.mobile-chats-open .mobile-sidebar-backdrop{display:block}
+    .emoji-picker{right:auto;left:0;bottom:calc(100% + 8px);min-width:min(280px,88vw)}
+  }
+
+  /* Group modal */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:10000}
+  .modal{width:560px;background:var(--panel);padding:14px;border-radius:10px}
+  .modal input,.modal textarea{background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.05);border-radius:8px}
+  .member-list{display:flex;flex-direction:column;gap:8px;max-height:240px;overflow:auto;margin-top:10px}
+  .gif-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;max-height:360px;overflow:auto;margin-top:12px}
+  .gif-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:6px;cursor:pointer}
+  .gif-card img{width:100%;height:120px;object-fit:cover;border-radius:8px;display:block}
+  .gif-attrib{font-size:11px;color:var(--muted);margin-top:8px}
+  .user-checkbox{display:flex;align-items:center;gap:8px;padding:6px;border-radius:6px}
+  .user-checkbox:hover{background:rgba(255,255,255,0.02);cursor:pointer}
+  .notice-modal{max-width:560px}
+  .notice-text{line-height:1.6;white-space:pre-wrap}
+  .notice-check{display:flex;align-items:center;gap:8px;margin-top:12px;color:#e6eef6}
+  .notice-actions{display:flex;justify-content:flex-end;margin-top:14px}
+  .auth-home{display:flex;flex-direction:column;gap:12px}
+  .auth-actions{display:flex;gap:10px}
+  .auth-panel{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;z-index:10001}
+  .auth-panel.active{display:flex}
+  .auth-panel-card{width:min(520px,92vw);background:linear-gradient(180deg,#07101a,#081218);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;gap:10px;box-sizing:border-box}
+  .auth-panel-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+  .auth-panel input{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:transparent;color:inherit}
+
+  /* Server-first navigation */
+  html,body{overflow:hidden}
+  .app{max-width:none;width:100%;height:100dvh;margin:0;gap:0;border-radius:0;box-shadow:none}
+  .server-rail{width:72px;flex:0 0 72px;background:#070a0e;display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:10px;box-sizing:border-box;overflow-y:auto}
+  .rail-button{width:46px;height:46px;border:0;border-radius:16px;background:#151c25;color:#dce9f6;display:grid;place-items:center;cursor:pointer;transition:160ms ease;font-size:18px;flex:0 0 auto}
+  .rail-button:hover,.rail-button.active{background:var(--accent);color:#06121a;border-radius:13px}
+  .rail-button svg{width:21px;height:21px;fill:currentColor}
+  .server-rail-list{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;overflow-y:auto;overscroll-behavior:contain}
+  .server-icon{width:46px;height:46px;border:0;border-radius:50%;overflow:hidden;background:#192332;color:#e6eef6;display:grid;place-items:center;font-weight:700;cursor:pointer;transition:160ms ease;position:relative;flex:0 0 auto}
+  .server-icon:hover,.server-icon.active{border-radius:13px;background:var(--accent);color:#071017}
+  .server-icon.active:before{content:"";position:absolute;left:-10px;width:4px;height:24px;border-radius:0 4px 4px 0;background:#fff}
+  .server-icon img{width:100%;height:100%;object-fit:cover}
+  .server-create{margin-top:auto;background:#173b2a;color:#7df0ab}
+  .server-create:hover{background:#55d882;color:#071017}
+  .middle{width:280px;flex:0 0 280px;padding:0;background:#0e131b;gap:0;border-right:1px solid rgba(255,255,255,.035)}
+  .sidebar-top{height:56px;display:flex;align-items:center;gap:8px;padding:0 14px;border-bottom:1px solid rgba(255,255,255,.05);box-sizing:border-box;box-shadow:0 1px 0 rgba(0,0,0,.12)}
+  .sidebar-title{font-size:15px;font-weight:700;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .sidebar-action{margin-left:auto;background:transparent;color:var(--muted);border:0;border-radius:7px;padding:6px 8px;cursor:pointer;font-size:18px;line-height:1}
+  .sidebar-action:hover{background:rgba(255,255,255,.07);color:#fff}
+  .sidebar-panel{display:flex;flex:1;min-height:0;flex-direction:column;padding:10px;box-sizing:border-box}
+  .sidebar-panel[hidden]{display:none}
+  .sidebar-label{padding:8px 6px 5px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+  .chat-list{padding-top:0}
+  .chat-item{min-height:44px;padding:7px;box-sizing:border-box}
+  .chat-item img{width:34px;height:34px;border-radius:50%}
+  .server-channels{overflow:auto;flex:1;padding-top:4px}
+  .channel-category{padding:10px 6px 4px;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+  .channel-row{width:100%;display:flex;align-items:center;gap:8px;border:0;border-radius:7px;background:transparent;color:#aeb9c6;padding:8px;cursor:pointer;text-align:left;font:inherit;box-sizing:border-box}
+  .channel-row:hover,.channel-row.active{background:rgba(255,255,255,.07);color:#fff}
+  .channel-symbol{font-size:19px;line-height:1;width:18px;text-align:center;color:#7e8b9a}
+  .channel-row.active .channel-symbol{color:#fff}
+  .channel-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .channel-unread{margin-left:auto;width:7px;height:7px;border-radius:50%;background:#f4f7fb}
+  .sidebar-bottom{padding:10px;border-top:1px solid rgba(255,255,255,.05)}
+  .account-mini{display:flex;align-items:center;gap:8px;min-width:0;padding:6px;border-radius:8px;cursor:pointer}
+  .account-mini:hover{background:rgba(255,255,255,.05)}
+  .account-mini img{width:30px;height:30px;border-radius:50%;object-fit:cover}
+  .account-mini-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:600}
+  .right{min-width:0;padding:0;background:linear-gradient(180deg,#101720,#0a1017)}
+  .header{min-height:56px;padding:0 16px;box-sizing:border-box;border-bottom:1px solid rgba(255,255,255,.05)}
+  .messages{padding:16px;min-width:0}
+  .input-row{margin:0 16px 16px;padding:0;border:0}
+  .voice-room{margin:auto;max-width:560px;width:100%;padding:28px;border:1px solid rgba(255,255,255,.07);border-radius:16px;background:rgba(8,13,19,.5);text-align:center;box-sizing:border-box}
+  .voice-room-icon{font-size:46px;margin-bottom:8px}
+  .voice-room h2{margin:0 0 6px;font-size:20px}
+  .voice-room p{margin:0;color:var(--muted);font-size:13px}
+  .voice-members{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin:20px 0}
+  .voice-member{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);padding:6px 9px;border-radius:999px;font-size:13px}
+  .voice-member img{width:22px;height:22px;border-radius:50%;object-fit:cover}
+  .voice-status{font-size:12px;color:var(--muted);min-height:18px;margin-top:10px}
+  .voice-controls{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+  .voice-controls .btn{min-width:125px}
+  .server-modal-help{margin:0;color:var(--muted);font-size:12px;line-height:1.5}
+  .channel-type-choice{flex:1;padding:10px;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:rgba(255,255,255,.03);color:var(--muted);font:inherit;cursor:pointer}
+  .channel-type-choice.active{background:rgba(77,163,255,.18);border-color:var(--accent);color:#fff}
+  #group-modal,#group-settings-panel{display:none!important}
+  @media(max-width:900px){
+    .server-rail{width:64px;flex-basis:64px;padding-top:max(10px, env(safe-area-inset-top))}
+    .middle{left:64px;width:min(86vw,320px);max-width:none}
+    .mobile-sidebar-backdrop{left:64px}
+    .header{padding:0 10px}
+    .mobile-chat-toggle{display:inline-flex}
+    .input-row{margin:0 10px 10px}
+    .messages{padding:10px}
+    .header .controls{margin-left:auto}
+  }
+  @media(max-width:500px){
+    .server-rail{width:58px;flex-basis:58px}
+    .middle{left:58px;width:calc(100vw - 58px)}
+    .mobile-sidebar-backdrop{left:58px}
+    .rail-button,.server-icon{width:42px;height:42px}
+    .header .title{max-width:34vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    #send-btn{padding:8px;font-size:12px}
+    .emoji-wrap{display:none}
+  }
+</style>
+</head>
+<body>
+<div style="position:relative">
+  <div class="app" id="app">
+    <nav class="server-rail" aria-label="Server navigation">
+      <button id="home-button" class="rail-button active" type="button" aria-label="Home" title="Home">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.8 10.4v10.1c0 .8.7 1.5 1.5 1.5h5.2v-6.4h5V22h5.2c.8 0 1.5-.7 1.5-1.5V10.4L12 3z"/></svg>
+      </button>
+      <div id="server-rail-list" class="server-rail-list" aria-label="Your servers"></div>
+      <button id="create-server-btn" class="rail-button server-create" type="button" aria-label="Create a server" title="Create a server">+</button>
+    </nav>
+
+    <aside class="middle" aria-label="Home and server sidebar">
+      <div class="sidebar-top">
+        <div id="sidebar-title" class="sidebar-title">Home</div>
+        <div id="online-count" class="small">0 online</div>
+        <button id="server-settings-btn" class="sidebar-action" type="button" title="Server settings" aria-label="Server settings" hidden>•••</button>
+      </div>
+      <div id="home-sidebar" class="sidebar-panel">
+        <div class="sidebar-label">Direct messages</div>
+        <div class="chat-list" id="chat-list"></div>
+      </div>
+      <div id="server-sidebar" class="sidebar-panel" hidden>
+        <div id="server-channel-list" class="server-channels"></div>
+        <button id="add-channel-btn" class="btn ghost small" type="button" hidden>+ Add channel</button>
+      </div>
+      <div class="sidebar-bottom">
+        <div id="account-mini" class="account-mini" title="Account settings">
+          <img id="account-mini-avatar" alt="Your avatar" />
+          <div id="account-mini-name" class="account-mini-name">Account</div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="right">
+      <div class="header">
+        <button id="mobile-chat-toggle" class="btn ghost small mobile-chat-toggle">Menu</button>
+        <div class="title" id="chat-title">Home</div>
+        <div class="controls" id="header-controls">
+          <button id="account-settings" class="btn ghost small">Settings</button>
+        </div>
+      </div>
+
+      <div id="dm-header-area" style="display:none"></div>
+
+      <div class="messages" id="messages"></div>
+
+      <div class="input-row" id="message-composer">
+        <div class="composer-plus-wrap">
+          <button class="add-btn" title="More options" id="attach-btn" type="button">+</button>
+          <div id="composer-menu" class="composer-menu">
+            <button id="composer-menu-file" type="button">Attach file</button>
+            <button id="composer-menu-poll" type="button">Create poll</button>
+            <button id="composer-menu-gif" type="button">Search GIFs</button>
+          </div>
+        </div>
+        <input type="file" id="file-input" style="display:none" />
+        <textarea id="txt-message" placeholder="Write a message..."></textarea>
+        <div class="emoji-wrap">
+          <button id="emoji-picker-toggle" class="emoji-btn" type="button" title="Emoji">😊</button>
+          <div id="emoji-picker" class="emoji-picker"></div>
+        </div>
+        <button id="send-btn" class="btn">Send Message</button>
+      </div>
+    </div>
+  </div>
+  <div id="mobile-sidebar-backdrop" class="mobile-sidebar-backdrop"></div>
+
+  <!-- Login / Create account overlay: create form FIRST, then existing accounts -->
+  <div class="login-overlay" id="login-overlay">
+    <div class="login-box">
+      <div class="auth-home" id="auth-home">
+        <div style="display:flex;gap:8px;align-items:center">
+          <div style="font-weight:700">Welcome to HappeeChat3</div>
+          <div class="small" style="margin-left:auto">Firebase Auth</div>
+        </div>
+        <div class="small">Choose an option to sign in or make a new account.</div>
+        <div class="auth-actions">
+          <button id="open-login-panel" class="btn" style="flex:1">Log in</button>
+          <button id="open-signup-panel" class="btn ghost" style="flex:1">Create account</button>
+        </div>
+        <button id="continue-as-guest" class="btn ghost" style="width:100%">Continue as Guest</button>
+        <div id="login-msg" class="small" style="margin-top:8px;color:var(--muted)"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-panel" id="login-panel">
+    <div class="auth-panel-card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="font-weight:700">Log in</div>
+        <button id="close-login-panel" class="btn ghost small">Close</button>
+      </div>
+      <input id="login-identifier" placeholder="email" />
+      <input id="login-password" type="password" placeholder="password" />
+      <div id="login-panel-msg" class="small"></div>
+      <div class="auth-panel-actions">
+        <button id="reset-password" class="btn ghost">Forgot password?</button>
+        <button id="login-submit" class="btn">Log in</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-panel" id="signup-panel">
+    <div class="auth-panel-card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="font-weight:700">Create account</div>
+        <button id="close-signup-panel" class="btn ghost small">Close</button>
+      </div>
+      <input id="signup-username" placeholder="username" />
+      <input id="signup-email" type="email" placeholder="email" />
+      <input id="signup-password" type="password" placeholder="password" />
+      <input id="signup-confirm-password" type="password" placeholder="confirm password" />
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="avatar-file" type="file" accept="image/*" />
+        <div id="avatar-preview" style="width:48px;height:48px;border-radius:8px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center">avatar</div>
+      </div>
+      <div class="small">You may need to check spam folders on email, resend confirmation, or wait a few minutes.</div>
+      <div id="signup-panel-msg" class="small"></div>
+      <div class="auth-panel-actions">
+        <button id="signup-submit" class="btn">Create account</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-panel" id="signup-info-panel">
+    <div class="auth-panel-card">
+      <div style="font-weight:700">Check your email</div>
+      <div id="signup-info-text" class="notice-text">You may need to check spam folders on email, resend confirmation, or wait a few minutes.</div>
+      <div class="auth-panel-actions">
+        <button id="signup-info-ok" class="btn">ok</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-panel" id="settings-panel">
+    <div class="auth-panel-card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="font-weight:700">Account Settings</div>
+        <button id="close-settings-panel" class="btn ghost small">Close</button>
+      </div>
+      <input id="settings-username" placeholder="username" />
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="settings-avatar-file" type="file" accept="image/*" />
+        <div id="settings-avatar-preview" style="width:48px;height:48px;border-radius:8px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center">avatar</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="small">Ping volume</div>
+        <input id="settings-volume-slider" type="range" min="0" max="100" value="70" style="flex:1" />
+      </div>
+      <div id="settings-panel-msg" class="small"></div>
+      <div class="auth-panel-actions">
+        <button id="settings-reset-password" class="btn ghost">Forgot password?</button>
+        <button id="settings-delete-account" class="btn ghost">Delete account</button>
+        <button id="settings-logout" class="btn ghost">Logout</button>
+        <button id="settings-save" class="btn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Group creation modal -->
+  <div class="modal-backdrop" id="group-modal">
+    <div class="modal">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="font-weight:700">Create Group DM</div>
+        <button id="close-group-modal" class="btn ghost small">Cancel</button>
+      </div>
+      <div style="margin-top:8px">
+        <input id="group-title" placeholder="Group title (required)" style="width:100%;padding:8px;border-radius:6px;background:transparent;border:1px solid rgba(255,255,255,0.03)" />
+      </div>
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+        <input id="group-icon-file" type="file" accept="image/*" />
+        <div id="group-icon-preview" style="width:48px;height:48px;border-radius:8px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center">icon</div>
+      </div>
+      <div style="margin-top:10px;max-height:240px;overflow:auto" id="group-users-area"></div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button id="create-group-confirm" class="btn" style="flex:1">Create Group</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-panel" id="group-settings-panel">
+    <div class="auth-panel-card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="font-weight:700">Group Settings</div>
+        <button id="close-group-settings-panel" class="btn ghost small">Close</button>
+      </div>
+      <input id="group-settings-title" placeholder="group name" />
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="group-settings-icon-file" type="file" accept="image/*" />
+        <div id="group-settings-icon-preview" style="width:48px;height:48px;border-radius:8px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center">icon</div>
+      </div>
+      <div id="group-settings-msg" class="small"></div>
+      <div id="group-settings-members" class="member-list"></div>
+      <div class="auth-panel-actions">
+        <button id="group-settings-delete" class="btn ghost">Delete group</button>
+        <button id="group-settings-save" class="btn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="server-modal">
+    <div class="modal">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="font-weight:700">Create a server</div>
+        <button id="close-server-modal" class="btn ghost small" type="button">Cancel</button>
+      </div>
+      <p class="server-modal-help">A server starts with a # general text channel. You can add media, meme, and voice channels after it is created.</p>
+      <div style="margin-top:10px"><input id="server-name-input" placeholder="Server name" style="width:100%;padding:10px;box-sizing:border-box" /></div>
+      <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+        <input id="server-icon-file" type="file" accept="image/*" />
+        <div id="server-icon-preview" style="width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center">icon</div>
+      </div>
+      <div id="server-modal-msg" class="small" style="margin-top:10px"></div>
+      <div style="display:flex;gap:8px;margin-top:12px"><button id="create-server-confirm" class="btn" type="button" style="flex:1">Create server</button></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="channel-modal">
+    <div class="modal" style="width:min(460px,92vw)">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="font-weight:700">Create channel</div>
+        <button id="close-channel-modal" class="btn ghost small" type="button">Cancel</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="channel-type-choice active" data-channel-type="text" type="button"># Text</button>
+        <button class="channel-type-choice" data-channel-type="voice" type="button">⌕ Voice</button>
+      </div>
+      <div style="margin-top:10px"><input id="channel-name-input" placeholder="Channel name" style="width:100%;padding:10px;box-sizing:border-box" /></div>
+      <div id="channel-modal-msg" class="small" style="margin-top:10px"></div>
+      <div style="display:flex;gap:8px;margin-top:12px"><button id="create-channel-confirm" class="btn" type="button" style="flex:1">Create channel</button></div>
+    </div>
+  </div>
+
+  <div class="auth-panel" id="server-settings-panel">
+    <div class="auth-panel-card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="font-weight:700">Server settings</div>
+        <button id="close-server-settings-panel" class="btn ghost small" type="button">Close</button>
+      </div>
+      <input id="server-settings-name" placeholder="Server name" />
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="server-settings-icon-file" type="file" accept="image/*" />
+        <div id="server-settings-icon-preview" style="width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center">icon</div>
+      </div>
+      <div class="small">Members</div>
+      <div id="server-settings-members" class="member-list"></div>
+      <div id="server-settings-msg" class="small"></div>
+      <div class="auth-panel-actions">
+        <button id="server-settings-delete" class="btn ghost" type="button">Delete server</button>
+        <button id="server-settings-save" class="btn" type="button">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="poll-modal">
+    <div class="modal">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="font-weight:700">Create Poll</div>
+        <button id="close-poll-modal" class="btn ghost small" type="button">Cancel</button>
+      </div>
+      <div style="margin-top:10px">
+        <input id="poll-question" placeholder="Poll question" style="width:100%;padding:10px;box-sizing:border-box" />
+      </div>
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+        <input class="poll-option-input" placeholder="Option 1" style="width:100%;padding:10px;box-sizing:border-box" />
+        <input class="poll-option-input" placeholder="Option 2" style="width:100%;padding:10px;box-sizing:border-box" />
+        <input class="poll-option-input" placeholder="Option 3" style="width:100%;padding:10px;box-sizing:border-box" />
+        <input class="poll-option-input" placeholder="Option 4" style="width:100%;padding:10px;box-sizing:border-box" />
+      </div>
+      <div id="poll-modal-msg" class="small" style="margin-top:10px"></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button id="create-poll-confirm" class="btn" type="button" style="flex:1">Send Poll</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="gif-modal">
+    <div class="modal">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="font-weight:700">Search GIFs</div>
+        <button id="close-gif-modal" class="btn ghost small" type="button">Close</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <input id="gif-search-input" placeholder="Search GIPHY" style="flex:1;padding:10px;box-sizing:border-box" />
+        <button id="gif-search-btn" class="btn" type="button">Search</button>
+      </div>
+      <div id="gif-modal-msg" class="small" style="margin-top:10px">Powered by GIPHY</div>
+      <div id="gif-results" class="gif-grid"></div>
+      <div class="gif-attrib">Powered by GIPHY</div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="welcome-modal">
+    <div class="modal notice-modal">
+      <div style="font-weight:700;font-size:18px">Welcome to HappeeChat3</div>
+      <div class="notice-text" style="margin-top:10px">Welcome to HappeeChat3, a discord clone built by AI. Check out <a href="https://100happee.github.io" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">https://100happee.github.io</a> for more stuff like this. Rules: Don't swear, or have violence. Swearing or violence will have your chat deleted, and spamming will end in a ban. This chat website is usually only used for school purposes. Follow the rules and have fun!</div>
+      <label class="notice-check">
+        <input type="checkbox" id="welcome-do-not-show" />
+        <span>Do not show this again</span>
+      </label>
+      <div class="notice-actions">
+        <button id="welcome-ok-btn" class="btn">ok</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ping sound -->
+<audio id="ping-audio" src="./ping.mp3" preload="auto"></audio>
+
+<!-- Firebase SDK (modular) -->
+<script type="module">
+/* ============================
+   HappeeChat2 — Single-file app (with Group DM)
+   Based on original file (included in this repo). Group DM feature:
+   - "Make Group DM" button opens modal to choose members, title, icon.
+   - Groups stored under /groups in Firebase. Visible only to members.
+   - Group messages stored under /messages/groups/<groupId>/messages
+   ============================
+*/
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+import { getDatabase, ref, onValue, set, push, remove, get, update, onDisconnect } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  deleteUser,
+  signInWithEmailAndPassword,
+  signOut,
+  updateProfile,
+  onAuthStateChanged,
+  sendEmailVerification,
+  sendPasswordResetEmail
+} from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+
+/* -----------------------
+   Firebase config (provided)
+   -----------------------*/
+const firebaseConfig = {
+  apiKey: "AIzaSyDkpDlINFiUzR0PsFRcxxk-N2fhHLnpACI",
+  authDomain: "hchat2-1d004.firebaseapp.com",
+  databaseURL: "https://hchat2-1d004-default-rtdb.firebaseio.com",
+  projectId: "hchat2-1d004",
+  storageBucket: "hchat2-1d004.firebasestorage.app",
+  messagingSenderId: "807685526215",
+  appId: "1:807685526215:web:6b9042099ff0b464be24e2"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+/* ===============================
+   CONFIG
+   =============================== */
+const BLACKLIST = ["shit","fuck","nigger","nigga","bitch","cum","n1gger","n1gga","fvck","fux","fuk","nlgger","nlgga","asterisktest", "n i g g e r", "n igger", "ni gger", "faggot", "nig ger", "nigg er", "nigge r"]; // editable
+const MESSAGE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
+const IDLE_USER_TTL = 30 * 24 * 60 * 60 * 1000; // 30 days
+const PUBLIC_CHAT_LIMIT = 500;
+const ADMIN_USERNAME = "100happee";
+const PUBLIC_CHAT_SLOWDOWN_MS = 5000;
+const GUEST_SESSION_KEY = 'happeechat3-guest-session';
+
+/* ------------------------------
+   Utilities
+   ------------------------------*/
+const el =(s)=> document.querySelector(s);
+function uid(){ return 'id_' + Math.random().toString(36).slice(2,9); }
+function formatTimestamp(ts){
+  const d = new Date(ts);
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  let hh = d.getHours(); const ampm = hh>=12? 'p' : 'a';
+  hh = hh % 12; if(hh===0) hh=12;
+  const min = String(d.getMinutes()).padStart(2,'0');
+  return `${mm}/${dd} at ${hh}:${min}${ampm}`;
+}
+function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
+
+/* ================================
+   App state
+   ================================*/
+let state = {
+  me: null,
+  selectedChat: 'home',
+  activeServerId: null,
+  usersCache: {},
+  groupsCache: {},
+  serversCache: {},
+  voicePresence: {},
+  unread: {},
+  messagesCache: {},
+  pingVolume: 0.7,
+  publicCooldownUntil: 0,
+  voice: null
+};
+
+/* ================
+   DOM refs
+   ================*/
+const loginOverlay = el('#login-overlay');
+const authHome = el('#auth-home');
+const openLoginPanelBtn = el('#open-login-panel');
+const openSignupPanelBtn = el('#open-signup-panel');
+const continueAsGuestBtn = el('#continue-as-guest');
+const loginPanel = el('#login-panel');
+const closeLoginPanelBtn = el('#close-login-panel');
+const signupPanel = el('#signup-panel');
+const closeSignupPanelBtn = el('#close-signup-panel');
+const signupInfoPanel = el('#signup-info-panel');
+const signupInfoText = el('#signup-info-text');
+const signupInfoOkBtn = el('#signup-info-ok');
+const settingsPanel = el('#settings-panel');
+const closeSettingsPanelBtn = el('#close-settings-panel');
+const avatarFile = el('#avatar-file');
+const avatarPreview = el('#avatar-preview');
+const settingsUsername = el('#settings-username');
+const settingsAvatarFile = el('#settings-avatar-file');
+const settingsAvatarPreview = el('#settings-avatar-preview');
+const settingsVolumeSlider = el('#settings-volume-slider');
+const settingsPanelMsg = el('#settings-panel-msg');
+const settingsResetPasswordBtn = el('#settings-reset-password');
+const settingsDeleteAccountBtn = el('#settings-delete-account');
+const settingsLogoutBtn = el('#settings-logout');
+const settingsSaveBtn = el('#settings-save');
+const loginIdentifier = el('#login-identifier');
+const loginPassword = el('#login-password');
+const loginSubmitBtn = el('#login-submit');
+const loginPanelMsg = el('#login-panel-msg');
+const signupUsername = el('#signup-username');
+const signupEmail = el('#signup-email');
+const signupPassword = el('#signup-password');
+const signupConfirmPassword = el('#signup-confirm-password');
+const signupSubmitBtn = el('#signup-submit');
+const signupPanelMsg = el('#signup-panel-msg');
+const resetPasswordBtn = el('#reset-password');
+const loginMsg = el('#login-msg');
+
+const chatList = el('#chat-list');
+const messagesArea = el('#messages');
+const chatTitle = el('#chat-title');
+const txtMessage = el('#txt-message');
+const sendBtn = el('#send-btn');
+const composerMenu = el('#composer-menu');
+const composerMenuFileBtn = el('#composer-menu-file');
+const composerMenuPollBtn = el('#composer-menu-poll');
+const composerMenuGifBtn = el('#composer-menu-gif');
+const mobileChatToggleBtn = el('#mobile-chat-toggle');
+const mobileSidebarBackdrop = el('#mobile-sidebar-backdrop');
+const emojiPickerToggleBtn = el('#emoji-picker-toggle');
+const emojiPicker = el('#emoji-picker');
+const fileInput = el('#file-input');
+const attachBtn = el('#attach-btn');
+const pingAudio = el('#ping-audio');
+const accountSettingsBtn = el('#account-settings');
+const onlineCount = el('#online-count');
+const headerControls = el('#header-controls');
+const homeButton = el('#home-button');
+const createServerBtn = el('#create-server-btn');
+const serverRailList = el('#server-rail-list');
+const homeSidebar = el('#home-sidebar');
+const serverSidebar = el('#server-sidebar');
+const sidebarTitle = el('#sidebar-title');
+const serverChannelList = el('#server-channel-list');
+const addChannelBtn = el('#add-channel-btn');
+const serverSettingsBtn = el('#server-settings-btn');
+const messageComposer = el('#message-composer');
+const accountMini = el('#account-mini');
+const accountMiniAvatar = el('#account-mini-avatar');
+const accountMiniName = el('#account-mini-name');
+
+const serverModal = el('#server-modal');
+const closeServerModalBtn = el('#close-server-modal');
+const serverNameInput = el('#server-name-input');
+const serverIconFile = el('#server-icon-file');
+const serverIconPreview = el('#server-icon-preview');
+const serverModalMsg = el('#server-modal-msg');
+const createServerConfirmBtn = el('#create-server-confirm');
+const channelModal = el('#channel-modal');
+const closeChannelModalBtn = el('#close-channel-modal');
+const channelNameInput = el('#channel-name-input');
+const channelModalMsg = el('#channel-modal-msg');
+const createChannelConfirmBtn = el('#create-channel-confirm');
+const channelTypeChoices = Array.from(document.querySelectorAll('.channel-type-choice'));
+const serverSettingsPanel = el('#server-settings-panel');
+const closeServerSettingsPanelBtn = el('#close-server-settings-panel');
+const serverSettingsName = el('#server-settings-name');
+const serverSettingsIconFile = el('#server-settings-icon-file');
+const serverSettingsIconPreview = el('#server-settings-icon-preview');
+const serverSettingsMembers = el('#server-settings-members');
+const serverSettingsMsg = el('#server-settings-msg');
+const serverSettingsSaveBtn = el('#server-settings-save');
+const serverSettingsDeleteBtn = el('#server-settings-delete');
+
+const createGroupBtn = el('#create-group-btn');
+const groupModal = el('#group-modal');
+const closeGroupModal = el('#close-group-modal');
+const groupUsersArea = el('#group-users-area');
+const groupTitleInput = el('#group-title');
+const groupIconFile = el('#group-icon-file');
+const groupIconPreview = el('#group-icon-preview');
+const createGroupConfirm = el('#create-group-confirm');
+const groupSettingsPanel = el('#group-settings-panel');
+const closeGroupSettingsPanelBtn = el('#close-group-settings-panel');
+const groupSettingsTitle = el('#group-settings-title');
+const groupSettingsIconFile = el('#group-settings-icon-file');
+const groupSettingsIconPreview = el('#group-settings-icon-preview');
+const groupSettingsMsg = el('#group-settings-msg');
+const groupSettingsMembers = el('#group-settings-members');
+const groupSettingsDeleteBtn = el('#group-settings-delete');
+const groupSettingsSaveBtn = el('#group-settings-save');
+const pollModal = el('#poll-modal');
+const closePollModalBtn = el('#close-poll-modal');
+const pollQuestionInput = el('#poll-question');
+const pollOptionInputs = Array.from(document.querySelectorAll('.poll-option-input'));
+const pollModalMsg = el('#poll-modal-msg');
+const createPollConfirmBtn = el('#create-poll-confirm');
+const gifModal = el('#gif-modal');
+const closeGifModalBtn = el('#close-gif-modal');
+const gifSearchInput = el('#gif-search-input');
+const gifSearchBtn = el('#gif-search-btn');
+const gifModalMsg = el('#gif-modal-msg');
+const gifResults = el('#gif-results');
+const welcomeModal = el('#welcome-modal');
+const welcomeDoNotShow = el('#welcome-do-not-show');
+const welcomeOkBtn = el('#welcome-ok-btn');
+const EMOJI_OPTIONS = ['😀','😂','😊','😍','🤔','😎','😭','😡','👍','👎','👏','🎉','🔥','❤️','😴'];
+const REACTION_OPTIONS = ['👍','❤️','😂','😮','😢','🔥','🎉','👀'];
+
+let avatarBase64ForCreate = null;
+let groupIconBase64 = null;
+let serverIconBase64 = null;
+let serverSettingsIconBase64 = null;
+let selectedChannelType = 'text';
+let listenersStarted = false;
+let cleanupIntervalId = null;
+let heartbeatIntervalId = null;
+let pendingSignupProfile = null;
+let pendingLoginMessage = '';
+let settingsAvatarBase64 = null;
+let groupSettingsIconBase64 = null;
+let publicCooldownIntervalId = null;
+const PROFILE_DRAFTS_KEY = 'happeechat3-profile-drafts';
+const GIPHY_API_KEY = 'etKD0OwyDFs1G9sXEv4bufA3Ff4dnWlE';
+const SAFE_EMOJI_OPTIONS = ['\u{1F600}','\u{1F602}','\u{1F60A}','\u{1F60D}','\u{1F914}','\u{1F60E}','\u{1F62D}','\u{1F621}','\u{1F44D}','\u{1F44E}','\u{1F44F}','\u{1F389}','\u{1F525}','\u{2764}\u{FE0F}','\u{1F634}'];
+const SAFE_REACTION_OPTIONS = ['\u{1F44D}','\u{2764}\u{FE0F}','\u{1F602}','\u{1F62E}','\u{1F622}','\u{1F525}','\u{1F389}','\u{1F440}'];
+
+/* -------------------------
+   Firebase helpers
+   -------------------------*/
+const dbRef = (p)=> ref(db, p);
+
+/* ============================
+   Core: users, groups & accounts
+   ============================*/
+function fetchUsersAndRender(){
+  onValue(dbRef('users'), snapshot => {
+    const users = snapshot.val() || {};
+    state.usersCache = users;
+    renderChatList();
+    updateOnlineCount();
+    renderGroupUsersInModal();
+    renderAccountMini();
+    if(state.activeServerId) renderSidebarForView();
+  });
+}
+
+function fetchGroupsAndListen(){
+  onValue(dbRef('groups'), snapshot=>{
+    const groups = snapshot.val() || {};
+    state.groupsCache = groups;
+    renderChatList();
+  });
+}
+
+const PUBLIC_SERVER_ID = 'happeechat3-community';
+const PUBLIC_CHANNELS = {
+  general: { name: 'general', type: 'text', createdAt: 0 },
+  media: { name: 'media', type: 'text', createdAt: 0 },
+  memes: { name: 'memes', type: 'text', createdAt: 0 },
+  voice: { name: 'voice', type: 'voice', createdAt: 0 }
+};
+
+function getServerMembers(server = {}){
+  if(Array.isArray(server.members)) return server.members;
+  return Object.keys(server.members || {}).filter((id)=> server.members[id]);
+}
+
+function isPublicServer(serverId, server){
+  return serverId === PUBLIC_SERVER_ID || !!server?.isPublic;
+}
+
+function isServerMember(serverId, server){
+  return !!state.me && (isPublicServer(serverId, server) || getServerMembers(server).includes(state.me.id));
+}
+
+function serverChannels(server = {}){
+  return Object.entries(server.channels || {}).sort((a,b)=> (a[1].createdAt || 0) - (b[1].createdAt || 0));
+}
+
+async function ensurePublicServer(){
+  const publicRef = dbRef(`servers/${PUBLIC_SERVER_ID}`);
+  const snapshot = await get(publicRef);
+  const existing = snapshot.val();
+  if(!existing){
+    await set(publicRef, {
+      name: 'HappeeChat3 Community',
+      icon: '',
+      isPublic: true,
+      ownerId: 'system',
+      createdAt: Date.now(),
+      channels: PUBLIC_CHANNELS
+    });
+    return;
+  }
+  const updates = {};
+  for(const [channelId, channel] of Object.entries(PUBLIC_CHANNELS)){
+    if(!existing.channels?.[channelId]) updates[`channels/${channelId}`] = channel;
+  }
+  if(!existing.isPublic) updates.isPublic = true;
+  if(Object.keys(updates).length) await update(publicRef, updates);
+}
+
+function fetchServersAndListen(){
+  onValue(dbRef('servers'), snapshot=>{
+    state.serversCache = snapshot.val() || {};
+    renderServerRail();
+    if(state.activeServerId && !isServerMember(state.activeServerId, state.serversCache[state.activeServerId])){
+      viewHome();
+    } else {
+      renderSidebarForView();
+    }
+  });
+}
+
+function listenVoicePresence(){
+  onValue(dbRef('voice'), snapshot=>{
+    state.voicePresence = snapshot.val() || {};
+    connectVoicePeers();
+    if(isVoiceSelection(state.selectedChat)) renderMessagesForCurrentChat();
+  });
+}
+
+function defaultAvatar(name){
+  const letter = (name||'?').charAt(0).toUpperCase();
+  return `https://via.placeholder.com/80/222229/ffffff?text=${encodeURIComponent(letter)}`;
+}
+
+function getStoredGuestSession(){
+  try{
+    return JSON.parse(localStorage.getItem(GUEST_SESSION_KEY) || 'null');
+  }catch{
+    return null;
+  }
+}
+
+function storeGuestSession(session){
+  if(!session){
+    localStorage.removeItem(GUEST_SESSION_KEY);
+    return;
+  }
+  localStorage.setItem(GUEST_SESSION_KEY, JSON.stringify(session));
+}
+
+function buildGuestProfile(existing = {}){
+  const id = existing.id || `guest_${uid()}`;
+  const username = existing.username || `Guest-${Math.random().toString(36).slice(2,6)}`;
+  return {
+    id,
+    username,
+    avatar: existing.avatar || defaultAvatar(username),
+    email: '',
+    isGuest: true,
+    hideWelcomePopup: !!existing.hideWelcomePopup
+  };
+}
+
+async function startGuestSession(existing = null){
+  const guest = buildGuestProfile(existing || getStoredGuestSession() || {});
+  await update(dbRef(`users/${guest.id}`), {
+    username: guest.username,
+    avatar: guest.avatar,
+    email: '',
+    authProvider: 'guest',
+    createdAt: existing?.createdAt || Date.now(),
+    lastActive: Date.now(),
+    deleted: false,
+    hideWelcomePopup: guest.hideWelcomePopup,
+    isGuest: true
+  });
+  state.me = guest;
+  storeGuestSession(guest);
+  loginOverlay.style.display = 'none';
+  await afterLogin(guest);
+}
+
+function clearGuestSession(){
+  storeGuestSession(null);
+}
+
+function isGuestUser(){
+  return !!state.me?.isGuest;
+}
+
+function getMessagePath(contextId, isGroup, messageId){
+  if(contextId === 'public') return `messages/public/${messageId}`;
+  if(contextId.startsWith('server:')){
+    const [, serverId, channelId] = contextId.split(':');
+    return `messages/servers/${serverId}/${channelId}/messages/${messageId}`;
+  }
+  if(isGroup) return `messages/groups/${contextId}/messages/${messageId}`;
+  return `messages/dms/${contextId}/messages/${messageId}`;
+}
+
+function getPublicCooldownRemaining(){
+  return Math.max(0, state.publicCooldownUntil - Date.now());
+}
+
+function canSendToPublic(){
+  return getPublicCooldownRemaining() === 0;
+}
+
+function isMobileView(){
+  return window.matchMedia('(max-width: 900px)').matches;
+}
+
+function setMobileChatDrawer(open){
+  document.body.classList.toggle('mobile-chats-open', !!open && isMobileView());
+}
+
+function renderEmojiPicker(){
+  if(!emojiPicker) return;
+  emojiPicker.innerHTML = '';
+  for(const emoji of SAFE_EMOJI_OPTIONS){
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'emoji-option';
+    btn.textContent = emoji;
+    btn.addEventListener('click', ()=>{
+      const start = txtMessage.selectionStart ?? txtMessage.value.length;
+      const end = txtMessage.selectionEnd ?? txtMessage.value.length;
+      txtMessage.value = `${txtMessage.value.slice(0, start)}${emoji}${txtMessage.value.slice(end)}`;
+      txtMessage.focus();
+      const nextPos = start + emoji.length;
+      txtMessage.setSelectionRange(nextPos, nextPos);
+      emojiPicker.classList.remove('open');
+    });
+    emojiPicker.appendChild(btn);
+  }
+}
+
+function normalizeReactions(raw = {}){
+  return Object.entries(raw).map(([encodedEmoji, users])=>({
+    emoji: decodeURIComponent(encodedEmoji),
+    encodedEmoji,
+    count: Object.keys(users || {}).length,
+    hasMine: !!(state.me && users && users[state.me.id])
+  })).filter((entry)=> entry.count > 0).sort((a,b)=> b.count - a.count);
+}
+
+async function toggleReaction(contextId, isGroup, messageId, emoji){
+  if(!state.me){
+    openLoginOverlay();
+    return;
+  }
+  const encodedEmoji = encodeURIComponent(emoji);
+  const path = `${getMessagePath(contextId, isGroup, messageId)}/reactions/${encodedEmoji}/${state.me.id}`;
+  const messages = contextId === 'public'
+    ? (state.messagesCache.public || [])
+    : isGroup
+      ? ((state.messagesCache.groups && state.messagesCache.groups[contextId]) || [])
+      : ((state.messagesCache.dms && state.messagesCache.dms[contextId]) || []);
+  const current = messages.find((msg)=> msg.id === messageId);
+  const hasMine = !!current?.reactions?.[encodedEmoji]?.[state.me.id];
+  if(hasMine){
+    await remove(dbRef(path));
+  } else {
+    await set(dbRef(path), true);
+  }
+}
+
+function toggleComposerMenu(open){
+  if(!composerMenu) return;
+  composerMenu.classList.toggle('open', !!open);
+}
+
+function resetPollModal(){
+  pollQuestionInput.value = '';
+  pollOptionInputs.forEach((input, index)=>{
+    input.value = '';
+    input.placeholder = `Option ${index + 1}`;
+  });
+  pollModalMsg.textContent = '';
+}
+
+function openPollModal(){
+  resetPollModal();
+  pollModal.style.display = 'flex';
+  toggleComposerMenu(false);
+}
+
+function closePollModal(){
+  pollModal.style.display = 'none';
+}
+
+function openGifModal(){
+  gifModal.style.display = 'flex';
+  gifModalMsg.textContent = GIPHY_API_KEY
+    ? 'Powered by GIPHY'
+    : 'Add a GIPHY API key in GIPHY_API_KEY to enable GIF search.';
+  gifResults.innerHTML = '';
+  gifSearchInput.value = '';
+  toggleComposerMenu(false);
+}
+
+function closeGifModal(){
+  gifModal.style.display = 'none';
+}
+
+function renderGroupSettingsMembers(gid){
+  if(!groupSettingsMembers) return;
+  groupSettingsMembers.innerHTML = '';
+  const group = state.groupsCache[gid];
+  if(!group) return;
+  const entries = Object.entries(state.usersCache)
+    .filter(([, user])=> !user.deleted)
+    .sort((a,b)=> (a[1].username || '').localeCompare(b[1].username || ''));
+  for(const [id, user] of entries){
+    const item = document.createElement('label');
+    item.className = 'user-checkbox';
+    const checked = group.members.includes(id);
+    const disabled = id === group.creator;
+    item.innerHTML = `
+      <input type="checkbox" data-uid="${id}" ${checked ? 'checked' : ''} ${disabled ? 'disabled' : ''} />
+      <img src="${user.avatar || defaultAvatar(user.username)}" style="width:36px;height:36px;border-radius:6px;object-fit:cover"/>
+      <div style="display:flex;flex-direction:column">
+        <div style="font-weight:700">${escapeHtml(user.username)}</div>
+        <div class="small">${disabled ? 'Creator' : 'Member'}</div>
+      </div>
+    `;
+    groupSettingsMembers.appendChild(item);
+  }
+}
+
+function extractYouTubeId(text=''){
+  const candidates = String(text).match(/https?:\/\/[^\s<]+/gi) || [];
+  for(const raw of candidates){
+    const cleaned = raw.replace(/[).,!?]+$/, '');
+    try{
+      const url = new URL(cleaned);
+      const host = url.hostname.replace(/^www\./, '');
+      if(host === 'youtu.be'){
+        const id = url.pathname.split('/').filter(Boolean)[0];
+        if(id && /^[A-Za-z0-9_-]{11}$/.test(id)) return id;
+      }
+      if(host === 'youtube.com' || host === 'm.youtube.com'){
+        const v = url.searchParams.get('v');
+        if(v && /^[A-Za-z0-9_-]{11}$/.test(v)) return v;
+        const parts = url.pathname.split('/').filter(Boolean);
+        const shortsIndex = parts.indexOf('shorts');
+        if(shortsIndex !== -1 && parts[shortsIndex + 1] && /^[A-Za-z0-9_-]{11}$/.test(parts[shortsIndex + 1])) return parts[shortsIndex + 1];
+        const embedIndex = parts.indexOf('embed');
+        if(embedIndex !== -1 && parts[embedIndex + 1] && /^[A-Za-z0-9_-]{11}$/.test(parts[embedIndex + 1])) return parts[embedIndex + 1];
+      }
+    }catch{}
+  }
+  return '';
+}
+
+function renderYouTubeEmbedHtml(text=''){
+  const videoId = extractYouTubeId(text);
+  if(!videoId) return '';
+  return `<div class="embed-frame"><iframe src="https://www.youtube-nocookie.com/embed/${videoId}" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`;
+}
+
+function extractSoundCloudEmbedSrc(text=''){
+  const iframeSrcMatch = String(text).match(/<iframe[^>]+src=["']([^"']+)["']/i);
+  const candidates = [];
+  if(iframeSrcMatch?.[1]) candidates.push(iframeSrcMatch[1]);
+  const urlMatches = String(text).match(/https?:\/\/[^\s<]+/gi) || [];
+  candidates.push(...urlMatches);
+  for(const raw of candidates){
+    const cleaned = raw.replace(/[).,!?]+$/, '').replace(/&amp;/g, '&');
+    try{
+      const url = new URL(cleaned);
+      const host = url.hostname.replace(/^www\./, '');
+      if(host === 'w.soundcloud.com' && url.pathname.startsWith('/player/')){
+        return url.toString();
+      }
+      if(host === 'soundcloud.com' || host === 'm.soundcloud.com' || host === 'api.soundcloud.com'){
+        const player = new URL('https://w.soundcloud.com/player/');
+        player.searchParams.set('url', url.toString());
+        player.searchParams.set('color', '#ff5500');
+        player.searchParams.set('auto_play', 'false');
+        player.searchParams.set('hide_related', 'false');
+        player.searchParams.set('show_comments', 'true');
+        player.searchParams.set('show_user', 'true');
+        player.searchParams.set('show_reposts', 'false');
+        player.searchParams.set('show_teaser', 'true');
+        player.searchParams.set('visual', 'true');
+        return player.toString();
+      }
+    }catch{}
+  }
+  return '';
+}
+
+function renderSoundCloudEmbedHtml(text=''){
+  const src = extractSoundCloudEmbedSrc(text);
+  if(!src) return '';
+  return `<div class="embed-frame soundcloud"><iframe scrolling="no" frameborder="no" allow="autoplay" src="${src}" title="SoundCloud player"></iframe></div>`;
+}
+
+function renderSupportedEmbedsHtml(text=''){
+  return `${renderYouTubeEmbedHtml(text)}${renderSoundCloudEmbedHtml(text)}`;
+}
+
+function buildPollPayload(question, options){
+  const pollOptions = {};
+  options.forEach((option, index)=>{
+    pollOptions[`option_${index}`] = { text: option, votes: {} };
+  });
+  return {
+    question,
+    options: pollOptions,
+    createdBy: state.me.id
+  };
+}
+
+function renderPollElement(m, contextId, isGroup){
+  if(!m.poll) return null;
+  const poll = m.poll;
+  const card = document.createElement('div');
+  card.className = 'poll-card';
+  const options = Object.entries(poll.options || {});
+  const totalVotes = options.reduce((sum, [, option])=> sum + Object.keys(option.votes || {}).length, 0);
+  card.innerHTML = `<div class="poll-title">${escapeHtml(poll.question || 'Poll')}</div>`;
+  const list = document.createElement('div');
+  list.className = 'poll-options';
+  for(const [optionId, option] of options){
+    const count = Object.keys(option.votes || {}).length;
+    const active = !!option.votes?.[state.me?.id || ''];
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `poll-option${active ? ' active' : ''}`;
+    btn.innerHTML = `<span class="poll-option-text">${escapeHtml(option.text || 'Option')}</span><span>${count}</span>`;
+    btn.onclick = async ()=>{
+      if(!state.me){
+        openLoginOverlay();
+        return;
+      }
+      const basePath = `${getMessagePath(contextId, isGroup, m.id)}/poll/options`;
+      const updates = {};
+      for(const [otherId, otherOption] of Object.entries(poll.options || {})){
+        const hasVote = !!otherOption.votes?.[state.me.id];
+        if(otherId === optionId && !hasVote){
+          updates[`${otherId}/votes/${state.me.id}`] = true;
+        } else if(otherId !== optionId && hasVote){
+          updates[`${otherId}/votes/${state.me.id}`] = null;
+        } else if(otherId === optionId && hasVote){
+          updates[`${otherId}/votes/${state.me.id}`] = null;
+        }
+      }
+      await update(dbRef(basePath), updates);
+    };
+    list.appendChild(btn);
+  }
+  card.appendChild(list);
+  const meta = document.createElement('div');
+  meta.className = 'poll-meta';
+  meta.textContent = `${totalVotes} vote${totalVotes === 1 ? '' : 's'}`;
+  card.appendChild(meta);
+  return card;
+}
+
+async function searchGiphyGifs(query){
+  if(!GIPHY_API_KEY){
+    gifModalMsg.textContent = 'Add a GIPHY API key in GIPHY_API_KEY to enable GIF search.';
+    return;
+  }
+  const q = (query || '').trim();
+  if(!q){
+    gifModalMsg.textContent = 'Enter a search term.';
+    return;
+  }
+  gifModalMsg.textContent = 'Searching GIPHY...';
+  gifResults.innerHTML = '';
+  try{
+    const url = new URL('https://api.giphy.com/v1/gifs/search');
+    url.searchParams.set('q', q);
+    url.searchParams.set('api_key', GIPHY_API_KEY);
+    url.searchParams.set('limit', '12');
+    url.searchParams.set('rating', 'pg-13');
+    url.searchParams.set('bundle', 'messaging_non_clips');
+    const response = await fetch(url.toString());
+    if(!response.ok) throw new Error('search failed');
+    const data = await response.json();
+    const results = data.data || [];
+    if(results.length === 0){
+      gifModalMsg.textContent = 'No GIFs found.';
+      return;
+    }
+    gifModalMsg.textContent = 'Powered by GIPHY';
+    for(const result of results){
+      const preview = result.images?.fixed_width_small?.url || result.images?.preview_gif?.url || result.images?.fixed_width?.url;
+      const full = result.images?.original?.url || result.images?.fixed_width?.url || preview;
+      if(!preview || !full) continue;
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'gif-card';
+      card.innerHTML = `<img src="${preview}" alt="${escapeHtml(result.title || 'GIF')}" />`;
+      card.onclick = async ()=>{
+        fileInput._pendingFile = { name: 'giphy.gif', type: 'image/gif', data: full };
+        if(!txtMessage.value.trim()){
+          txtMessage.placeholder = 'GIF selected. Add text or press send.';
+        }
+        closeGifModal();
+      };
+      gifResults.appendChild(card);
+    }
+  }catch(err){
+    console.error(err);
+    gifModalMsg.textContent = 'Could not load GIFs right now.';
+  }
+}
+
+function updateSendButtonState(){
+  const isPublic = state.selectedChat === 'public';
+  const remaining = Math.ceil(getPublicCooldownRemaining() / 1000);
+  if(isPublic && remaining > 0){
+    sendBtn.disabled = true;
+    sendBtn.textContent = `Wait ${remaining}s`;
+    txtMessage.placeholder = `Public chat cooldown: ${remaining}s`;
+    return;
+  }
+  sendBtn.disabled = false;
+  sendBtn.textContent = 'Send Message';
+  txtMessage.placeholder = 'Write a message...';
+}
+
+function startPublicCooldown(){
+  state.publicCooldownUntil = Date.now() + PUBLIC_CHAT_SLOWDOWN_MS;
+  if(publicCooldownIntervalId){
+    clearInterval(publicCooldownIntervalId);
+  }
+  updateSendButtonState();
+  publicCooldownIntervalId = setInterval(()=>{
+    updateSendButtonState();
+    if(canSendToPublic()){
+      clearInterval(publicCooldownIntervalId);
+      publicCooldownIntervalId = null;
+    }
+  }, 250);
+}
+
+function renderChatList(){
+  if(!chatList) return;
+  chatList.innerHTML = '';
+  const users = state.usersCache;
+  const entries = Object.entries(users).filter(([id,u])=> !u.deleted && id !== state.me?.id);
+  entries.sort((a,b)=> (a[1].username || '').localeCompare(b[1].username));
+  if(entries.length === 0){
+    chatList.innerHTML = '<div class="small" style="padding:10px 6px">No one else is here yet.</div>';
+    return;
+  }
+  for(const [id,u] of entries){
+    const elc = document.createElement('div');
+    elc.className = `chat-item${state.selectedChat === 'dm:'+id ? ' active' : ''}`;
+    elc.dataset.chat = 'dm:'+id;
+    elc.innerHTML = `<img src="${u.avatar||defaultAvatar(u.username)}" />
+      <div class="meta"><div class="name">${u.username}</div><div class="small">Direct message</div></div>
+      ${state.unread['dm:'+id]?('<div class="unread-count">'+state.unread['dm:'+id]+'</div>') : ''}`;
+    elc.onclick = ()=> selectChat('dm:'+id);
+    chatList.appendChild(elc);
+  }
+}
+
+function isVoiceSelection(selection){
+  if(!selection?.startsWith('server:')) return false;
+  const [, serverId, channelId] = selection.split(':');
+  return state.serversCache?.[serverId]?.channels?.[channelId]?.type === 'voice';
+}
+
+function renderServerRail(){
+  if(!serverRailList) return;
+  serverRailList.innerHTML = '';
+  const entries = Object.entries(state.serversCache || {})
+    .filter(([id, server])=> isServerMember(id, server))
+    .sort((a,b)=> {
+      if(a[0] === PUBLIC_SERVER_ID) return -1;
+      if(b[0] === PUBLIC_SERVER_ID) return 1;
+      return (a[1].name || '').localeCompare(b[1].name || '');
+    });
+  for(const [id, server] of entries){
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `server-icon${state.activeServerId === id ? ' active' : ''}`;
+    button.title = server.name || 'Server';
+    button.setAttribute('aria-label', server.name || 'Server');
+    if(server.icon){
+      button.innerHTML = `<img src="${server.icon}" alt="" />`;
+    } else {
+      button.textContent = (server.name || 'S').slice(0,2).toUpperCase();
+    }
+    button.onclick = ()=> openServer(id);
+    serverRailList.appendChild(button);
+  }
+}
+
+function renderAccountMini(){
+  if(!state.me) return;
+  accountMiniAvatar.src = state.me.avatar || defaultAvatar(state.me.username);
+  accountMiniName.textContent = state.me.username || 'Account';
+}
+
+function renderSidebarForView(){
+  const server = state.activeServerId && state.serversCache[state.activeServerId];
+  const isInServer = !!server && isServerMember(state.activeServerId, server);
+  homeSidebar.hidden = isInServer;
+  serverSidebar.hidden = !isInServer;
+  homeButton.classList.toggle('active', !isInServer);
+  if(!isInServer){
+    sidebarTitle.textContent = 'Home';
+    onlineCount.hidden = false;
+    serverSettingsBtn.hidden = true;
+    renderChatList();
+    return;
+  }
+  sidebarTitle.textContent = server.name || 'Server';
+  onlineCount.hidden = true;
+  serverSettingsBtn.hidden = server.ownerId !== state.me?.id;
+  addChannelBtn.hidden = server.ownerId !== state.me?.id;
+  renderServerChannels(state.activeServerId, server);
+}
+
+function renderServerChannels(serverId, server){
+  serverChannelList.innerHTML = '';
+  const channels = serverChannels(server);
+  for(const type of ['text','voice']){
+    const filtered = channels.filter(([, channel])=> (channel.type || 'text') === type);
+    if(!filtered.length) continue;
+    const label = document.createElement('div');
+    label.className = 'channel-category';
+    label.textContent = type === 'voice' ? 'Voice channels' : 'Text channels';
+    serverChannelList.appendChild(label);
+    for(const [channelId, channel] of filtered){
+      const selection = `server:${serverId}:${channelId}`;
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = `channel-row${state.selectedChat === selection ? ' active' : ''}`;
+      row.innerHTML = `<span class="channel-symbol">${type === 'voice' ? '⌕' : '#'}</span><span class="channel-name">${escapeHtml(channel.name || channelId)}</span>${state.unread[selection] ? '<span class="channel-unread"></span>' : ''}`;
+      row.onclick = ()=> selectChat(selection);
+      serverChannelList.appendChild(row);
+    }
+  }
+}
+
+function viewHome(){
+  if(state.voice) leaveVoice();
+  ['delete-user-btn','group-options-btn','group-settings-btn'].forEach((id)=> el('#'+id)?.remove());
+  state.activeServerId = null;
+  state.selectedChat = 'home';
+  chatTitle.textContent = 'Home';
+  renderServerRail();
+  renderSidebarForView();
+  renderMessagesForCurrentChat();
+  if(isMobileView()) setMobileChatDrawer(false);
+}
+
+function openServer(serverId){
+  const server = state.serversCache[serverId];
+  if(!server || !isServerMember(serverId, server)) return;
+  if(state.voice && state.voice.serverId !== serverId) leaveVoice();
+  state.activeServerId = serverId;
+  const channels = serverChannels(server);
+  const preferred = channels.find(([,channel])=> (channel.type || 'text') === 'text') || channels[0];
+  renderServerRail();
+  renderSidebarForView();
+  if(preferred) selectChat(`server:${serverId}:${preferred[0]}`);
+}
+
+function updateOnlineCount(){
+  const users = state.usersCache;
+  const online = Object.values(users).filter(u=>!u.deleted && (Date.now() - (u.lastActive||0) < 5*60*1000)).length;
+  onlineCount.textContent = `${online} online`;
+}
+
+/* =================================
+   Login / create account flows
+   =================================*/
+avatarFile.addEventListener('change', async (ev)=>{
+  const f = ev.target.files[0];
+  if(!f) return;
+  if(f.size > 4*1024*1024){ alert('Avatar exceeds 4MB'); return; }
+  const b = await fileToBase64(f);
+  avatarBase64ForCreate = b;
+  avatarPreview.innerHTML = `<img src="${b}" style="width:48px;height:48px;border-radius:8px;object-fit:cover" />`;
+});
+
+settingsAvatarFile.addEventListener('change', async (ev)=>{
+  const f = ev.target.files[0];
+  if(!f) return;
+  if(f.size > 4*1024*1024){ alert('Avatar exceeds 4MB'); return; }
+  settingsAvatarBase64 = await fileToBase64(f);
+  settingsAvatarPreview.innerHTML = `<img src="${settingsAvatarBase64}" style="width:48px;height:48px;border-radius:8px;object-fit:cover" />`;
+});
+
+groupSettingsIconFile.addEventListener('change', async (ev)=>{
+  const f = ev.target.files[0];
+  if(!f) return;
+  if(f.size > 4*1024*1024){ alert('Icon exceeds 4MB'); return; }
+  groupSettingsIconBase64 = await fileToBase64(f);
+  groupSettingsIconPreview.innerHTML = `<img src="${groupSettingsIconBase64}" style="width:48px;height:48px;border-radius:8px;object-fit:cover" />`;
+});
+
+function openLoginOverlay(message=''){
+  loginOverlay.style.display = 'flex';
+  loginMsg.textContent = message || pendingLoginMessage || '';
+  pendingLoginMessage = '';
+  loginIdentifier.value = '';
+  loginPassword.value = '';
+  loginPanelMsg.textContent = '';
+  signupUsername.value = '';
+  signupEmail.value = '';
+  signupPassword.value = '';
+  signupConfirmPassword.value = '';
+  signupPanelMsg.textContent = '';
+  avatarBase64ForCreate = null;
+  avatarPreview.innerHTML = 'avatar';
+  loginPanel.classList.remove('active');
+  signupPanel.classList.remove('active');
+  signupInfoPanel.classList.remove('active');
+  settingsPanel.classList.remove('active');
+  groupSettingsPanel.classList.remove('active');
+  serverSettingsPanel.classList.remove('active');
+}
+
+function showAuthPanel(panel){
+  loginPanel.classList.remove('active');
+  signupPanel.classList.remove('active');
+  signupInfoPanel.classList.remove('active');
+  settingsPanel.classList.remove('active');
+  groupSettingsPanel.classList.remove('active');
+  serverSettingsPanel.classList.remove('active');
+  if(panel) panel.classList.add('active');
+}
+
+function openSettingsPanel(message=''){
+  if(!state.me) return;
+  settingsUsername.value = state.me.username || '';
+  settingsAvatarBase64 = state.me.avatar || '';
+  settingsVolumeSlider.value = String(Math.round((state.pingVolume || 0.7) * 100));
+  settingsAvatarPreview.innerHTML = `<img src="${settingsAvatarBase64 || defaultAvatar(state.me.username)}" style="width:48px;height:48px;border-radius:8px;object-fit:cover" />`;
+  settingsAvatarFile.value = '';
+  settingsPanelMsg.textContent = message;
+  settingsResetPasswordBtn.style.display = isGuestUser() ? 'none' : '';
+  settingsDeleteAccountBtn.textContent = isGuestUser() ? 'Delete guest profile' : 'Delete account';
+  showAuthPanel(settingsPanel);
+}
+
+function openGroupSettingsPanel(gid, message=''){
+  const group = state.groupsCache[gid];
+  if(!group || !state.me || group.creator !== state.me.id) return;
+  groupSettingsPanel.dataset.gid = gid;
+  groupSettingsTitle.value = group.title || '';
+  groupSettingsIconBase64 = group.icon || '';
+  groupSettingsIconPreview.innerHTML = `<img src="${groupSettingsIconBase64 || defaultAvatar(group.title || 'G')}" style="width:48px;height:48px;border-radius:8px;object-fit:cover" />`;
+  groupSettingsIconFile.value = '';
+  renderGroupSettingsMembers(gid);
+  groupSettingsMsg.textContent = message;
+  showAuthPanel(groupSettingsPanel);
+}
+
+async function getUsersMap(){
+  if(Object.keys(state.usersCache || {}).length > 0) return state.usersCache;
+  const snap = await get(dbRef('users'));
+  return snap.val() || {};
+}
+
+async function resolveLoginEmail(identifier){
+  const value = (identifier || '').trim();
+  return value;
+}
+
+async function isUsernameTaken(username){
+  const value = (username || '').trim().toLowerCase();
+  if(!value) return false;
+  const users = await getUsersMap();
+  return Object.values(users).some((u)=> !u.deleted && (u.username || '').trim().toLowerCase() === value);
+}
+
+function getStoredProfileDrafts(){
+  try{
+    return JSON.parse(localStorage.getItem(PROFILE_DRAFTS_KEY) || '{}');
+  }catch{
+    return {};
+  }
+}
+
+function saveProfileDraft(email, profile){
+  if(!email) return;
+  const drafts = getStoredProfileDrafts();
+  drafts[email.toLowerCase()] = profile;
+  localStorage.setItem(PROFILE_DRAFTS_KEY, JSON.stringify(drafts));
+}
+
+function getProfileDraft(email){
+  if(!email) return null;
+  const drafts = getStoredProfileDrafts();
+  return drafts[email.toLowerCase()] || null;
+}
+
+function clearProfileDraft(email){
+  if(!email) return;
+  const drafts = getStoredProfileDrafts();
+  delete drafts[email.toLowerCase()];
+  localStorage.setItem(PROFILE_DRAFTS_KEY, JSON.stringify(drafts));
+}
+
+function friendlyAuthError(err){
+  const code = err?.code || '';
+  if(code === 'auth/invalid-email') return 'Enter a valid email address.';
+  if(code === 'auth/missing-password') return 'Enter your password.';
+  if(code === 'auth/weak-password') return 'Password should be at least 6 characters.';
+  if(code === 'auth/email-already-in-use') return 'That email is already in use.';
+  if(code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') return 'Incorrect email or password.';
+  if(code === 'auth/too-many-requests') return 'Too many attempts. Wait a bit and try again.';
+  return err?.message || 'Authentication failed.';
+}
+
+function deriveUsername(authUser){
+  const display = (authUser?.displayName || '').trim();
+  if(display) return display;
+  return 'User';
+}
+
+async function syncAuthenticatedUser(authUser){
+  clearGuestSession();
+  const snap = await get(dbRef(`users/${authUser.uid}`));
+  const existing = snap.val() || {};
+  const storedDraft = getProfileDraft(authUser.email);
+  const pendingDisplayName = pendingSignupProfile?.displayName || '';
+  const pendingAvatar = pendingSignupProfile?.avatar || '';
+  const username = pendingDisplayName || existing.username || storedDraft?.username || (authUser.displayName || '').trim() || 'User';
+  const avatar = pendingAvatar || existing.avatar || storedDraft?.avatar || authUser.photoURL || defaultAvatar(username);
+  const userObj = {
+    username,
+    avatar,
+    email: authUser.email || existing.email || '',
+    authProvider: authUser.providerData?.[0]?.providerId || existing.authProvider || 'password',
+    createdAt: existing.createdAt || Date.now(),
+    lastActive: Date.now(),
+    deleted: false,
+    hideWelcomePopup: !!existing.hideWelcomePopup
+  };
+  await update(dbRef(`users/${authUser.uid}`), userObj);
+  if(authUser.email){
+    saveProfileDraft(authUser.email, { username, avatar });
+  }
+  state.me = {
+    id: authUser.uid,
+    username,
+    avatar,
+    email: userObj.email,
+    hideWelcomePopup: userObj.hideWelcomePopup
+  };
+  pendingSignupProfile = null;
+  loginOverlay.style.display = 'none';
+  await afterLogin(userObj);
+}
+
+continueAsGuestBtn.addEventListener('click', async ()=>{
+  loginMsg.textContent = 'Starting guest session...';
+  try{
+    await startGuestSession();
+    loginMsg.textContent = '';
+  }catch(err){
+    console.error(err);
+    loginMsg.textContent = 'Could not start guest mode right now.';
+  }
+});
+
+openLoginPanelBtn.addEventListener('click', ()=>{
+  loginMsg.textContent = '';
+  loginPanelMsg.textContent = '';
+  showAuthPanel(loginPanel);
+});
+
+openSignupPanelBtn.addEventListener('click', ()=>{
+  loginMsg.textContent = '';
+  signupPanelMsg.textContent = '';
+  showAuthPanel(signupPanel);
+});
+
+closeLoginPanelBtn.addEventListener('click', ()=> showAuthPanel(null));
+closeSignupPanelBtn.addEventListener('click', ()=> showAuthPanel(null));
+closeSettingsPanelBtn.addEventListener('click', ()=> showAuthPanel(null));
+closeGroupSettingsPanelBtn.addEventListener('click', ()=> showAuthPanel(null));
+signupInfoOkBtn.addEventListener('click', ()=>{
+  showAuthPanel(null);
+  loginMsg.textContent = 'Your account is created. Verify your email, then log in.';
+});
+
+accountSettingsBtn.addEventListener('click', ()=>{
+  openSettingsPanel();
+});
+
+loginSubmitBtn.addEventListener('click', async ()=>{
+  const email = (loginIdentifier.value || '').trim();
+  const password = loginPassword.value || '';
+  if(!email || !password){ loginPanelMsg.textContent = 'Enter your email and password.'; return; }
+  loginPanelMsg.textContent = 'Signing in...';
+  try{
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    if(!cred.user.emailVerified){
+      loginPanelMsg.textContent = 'Verify your email first. We sent another verification link.';
+      await sendEmailVerification(cred.user).catch(()=>{});
+      await signOut(auth);
+      return;
+    }
+    loginPanelMsg.textContent = '';
+  }catch(err){
+    loginPanelMsg.textContent = friendlyAuthError(err);
+  }
+});
+
+signupSubmitBtn.addEventListener('click', async ()=>{
+  const username = (signupUsername.value || '').trim();
+  const email = (signupEmail.value || '').trim();
+  const password = signupPassword.value || '';
+  const confirmPassword = signupConfirmPassword.value || '';
+  if(!username || !email || !password || !confirmPassword){
+    signupPanelMsg.textContent = 'Fill out username, email, password, and confirm password.';
+    return;
+  }
+  if(password !== confirmPassword){
+    signupPanelMsg.textContent = 'Passwords do not match.';
+    return;
+  }
+  if(await isUsernameTaken(username)){
+    signupPanelMsg.textContent = 'That username is already taken.';
+    return;
+  }
+  signupPanelMsg.textContent = 'Creating account...';
+  pendingSignupProfile = { displayName: username, avatar: avatarBase64ForCreate || '' };
+  saveProfileDraft(email, {
+    username,
+    avatar: avatarBase64ForCreate || defaultAvatar(username)
+  });
+  try{
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    if(username || avatarBase64ForCreate){
+      await updateProfile(cred.user, {
+        displayName: username,
+        photoURL: avatarBase64ForCreate || null
+      });
+    }
+    await update(dbRef(`users/${cred.user.uid}`), {
+      username,
+      avatar: avatarBase64ForCreate || defaultAvatar(username),
+      email,
+      authProvider: 'password',
+      createdAt: Date.now(),
+      lastActive: Date.now(),
+      deleted: false,
+      hideWelcomePopup: false
+    });
+    await sendEmailVerification(cred.user);
+    await signOut(auth);
+    signupPanelMsg.textContent = '';
+    signupInfoText.textContent = `Your HappeeChat3 account was created. You may need to check spam folders on email, resend confirmation, or wait a few minutes. Check ${email} for the verification email before logging in.`;
+    showAuthPanel(signupInfoPanel);
+  }catch(err){
+    pendingSignupProfile = null;
+    signupPanelMsg.textContent = friendlyAuthError(err);
+  }
+});
+
+resetPasswordBtn.addEventListener('click', async ()=>{
+  const email = (loginIdentifier.value || '').trim();
+  if(!email){ loginPanelMsg.textContent = 'Enter your email first.'; return; }
+  loginPanelMsg.textContent = 'Sending reset email...';
+  try{
+    await sendPasswordResetEmail(auth, email);
+    loginPanelMsg.textContent = 'Password reset email sent.';
+  }catch(err){
+    loginPanelMsg.textContent = friendlyAuthError(err);
+  }
+});
+
+settingsSaveBtn.addEventListener('click', async ()=>{
+  if(!state.me || (!isGuestUser() && !auth.currentUser)){
+    settingsPanelMsg.textContent = 'Please log in first.';
+    return;
+  }
+  const username = (settingsUsername.value || '').trim();
+  if(!username){
+    settingsPanelMsg.textContent = 'Enter a username.';
+    return;
+  }
+  const currentUsername = (state.me.username || '').trim().toLowerCase();
+  if(username.toLowerCase() !== currentUsername && await isUsernameTaken(username)){
+    settingsPanelMsg.textContent = 'That username is already taken.';
+    return;
+  }
+  settingsPanelMsg.textContent = 'Saving...';
+  const avatar = settingsAvatarBase64 || state.me.avatar || defaultAvatar(username);
+  try{
+    if(auth.currentUser){
+      await updateProfile(auth.currentUser, {
+        displayName: username,
+        photoURL: avatar.startsWith('data:') ? null : avatar
+      });
+    }
+    await update(dbRef(`users/${state.me.id}`), {
+      username,
+      avatar,
+      lastActive: Date.now(),
+      isGuest: isGuestUser()
+    });
+    if(state.me.email){
+      saveProfileDraft(state.me.email, { username, avatar });
+    }
+    state.me.username = username;
+    state.me.avatar = avatar;
+    if(isGuestUser()){
+      storeGuestSession(state.me);
+    }
+    settingsPanelMsg.textContent = 'Saved.';
+    renderChatList();
+    renderMessagesForCurrentChat();
+  }catch(err){
+    settingsPanelMsg.textContent = friendlyAuthError(err);
+  }
+});
+
+settingsResetPasswordBtn.addEventListener('click', async ()=>{
+  if(!state.me?.email){
+    settingsPanelMsg.textContent = 'No email is available for this account.';
+    return;
+  }
+  settingsPanelMsg.textContent = 'Sending reset email...';
+  try{
+    await sendPasswordResetEmail(auth, state.me.email);
+    settingsPanelMsg.textContent = 'Password reset email sent.';
+  }catch(err){
+    settingsPanelMsg.textContent = friendlyAuthError(err);
+  }
+});
+
+settingsLogoutBtn.addEventListener('click', ()=>{
+  showAuthPanel(null);
+  state.me = null;
+  clearGuestSession();
+  welcomeModal.style.display = 'none';
+  welcomeDoNotShow.checked = false;
+  signOut(auth).catch(()=>{});
+});
+
+groupSettingsSaveBtn.addEventListener('click', async ()=>{
+  const gid = groupSettingsPanel.dataset.gid;
+  const group = state.groupsCache[gid];
+  if(!gid || !group || !state.me || group.creator !== state.me.id){
+    groupSettingsMsg.textContent = 'Only the group creator can edit this group.';
+    return;
+  }
+  const title = (groupSettingsTitle.value || '').trim();
+  if(!title){
+    groupSettingsMsg.textContent = 'Enter a group name.';
+    return;
+  }
+  groupSettingsMsg.textContent = 'Saving...';
+  const icon = groupSettingsIconBase64 || group.icon || defaultAvatar(title);
+  const members = Array.from(groupSettingsMembers.querySelectorAll('input[data-uid]'))
+    .filter((input)=> input.checked)
+    .map((input)=> input.dataset.uid);
+  if(!members.includes(group.creator)){
+    members.push(group.creator);
+  }
+  if(members.length < 2){
+    groupSettingsMsg.textContent = 'Group DMs need at least 2 members.';
+    return;
+  }
+  try{
+    await update(dbRef(`groups/${gid}`), { title, icon, members });
+    groupSettingsMsg.textContent = 'Saved.';
+    if(state.selectedChat === `group:${gid}`){
+      chatTitle.textContent = `${title} (Group)`;
+    }
+    renderChatList();
+  }catch(err){
+    groupSettingsMsg.textContent = 'Could not save group settings.';
+  }
+});
+
+groupSettingsDeleteBtn.addEventListener('click', async ()=>{
+  const gid = groupSettingsPanel.dataset.gid;
+  const group = state.groupsCache[gid];
+  if(!gid || !group || !state.me || group.creator !== state.me.id){
+    groupSettingsMsg.textContent = 'Only the group creator can delete this group.';
+    return;
+  }
+  if(!confirm('Delete this group and all its messages? This cannot be undone.')) return;
+  try{
+    await remove(dbRef(`groups/${gid}`));
+    await remove(dbRef(`messages/groups/${gid}`));
+    showAuthPanel(null);
+    if(state.selectedChat === `group:${gid}`){
+      selectChat('public');
+    }
+  }catch(err){
+    groupSettingsMsg.textContent = 'Could not delete the group right now.';
+  }
+});
+
+loginIdentifier.addEventListener('keydown', (ev)=>{
+  if(ev.key === 'Enter') loginSubmitBtn.click();
+});
+loginPassword.addEventListener('keydown', (ev)=>{
+  if(ev.key === 'Enter') loginSubmitBtn.click();
+});
+signupUsername.addEventListener('keydown', (ev)=>{
+  if(ev.key === 'Enter') signupSubmitBtn.click();
+});
+signupEmail.addEventListener('keydown', (ev)=>{
+  if(ev.key === 'Enter') signupSubmitBtn.click();
+});
+signupPassword.addEventListener('keydown', (ev)=>{
+  if(ev.key === 'Enter') signupSubmitBtn.click();
+});
+signupConfirmPassword.addEventListener('keydown', (ev)=>{
+  if(ev.key === 'Enter') signupSubmitBtn.click();
+});
+
+/* ============================
+   Messages listening & sending
+   ============================*/
+function listenMessages(){
+  onValue(dbRef('messages/public'), snapshot => {
+    const obj = snapshot.val() || {};
+    const msgs = Object.entries(obj).map(([id,m])=>({id,...m}));
+    msgs.sort((a,b)=> (a.ts||0)-(b.ts||0));
+    state.messagesCache['public'] = msgs;
+    renderMessagesForCurrentChat();
+    if(state.selectedChat !== 'public'){
+      // compute unread as new length difference
+      const last = state._lastSeen && state._lastSeen['public'] ? state._lastSeen['public'] : 0;
+      state.unread.public = Math.max(0, msgs.length - last);
+      updateUnreadBadges();
+    }
+    enforcePublicLimit();
+  });
+
+  onValue(dbRef('messages/dms'), snapshot => {
+    const obj = snapshot.val() || {};
+    const map = {};
+    for(const [dmid, room] of Object.entries(obj || {})){
+      const messagesObj = room.messages || {};
+      const msgs = Object.entries(messagesObj).map(([id,m])=>({id,...m}));
+      msgs.sort((a,b)=> (a.ts||0)-(b.ts||0));
+      map[dmid] = msgs;
+    }
+    state.messagesCache['dms'] = map;
+    renderMessagesForCurrentChat();
+  });
+
+  onValue(dbRef('messages/servers'), snapshot => {
+    const rawServers = snapshot.val() || {};
+    const servers = {};
+    for(const [serverId, rawChannels] of Object.entries(rawServers)){
+      servers[serverId] = {};
+      for(const [channelId, room] of Object.entries(rawChannels || {})){
+        const messagesObj = room.messages || {};
+        const messages = Object.entries(messagesObj).map(([id, message])=> ({ id, ...message }));
+        messages.sort((a,b)=> (a.ts || 0) - (b.ts || 0));
+        servers[serverId][channelId] = messages;
+        const selection = `server:${serverId}:${channelId}`;
+        if(state.selectedChat !== selection){
+          const seen = state._lastSeen?.[selection] || 0;
+          state.unread[selection] = Math.max(0, messages.length - seen);
+        }
+      }
+    }
+    state.messagesCache.servers = servers;
+    updateUnreadBadges();
+    renderMessagesForCurrentChat();
+  });
+
+  // group messages
+  onValue(dbRef('messages/groups'), snapshot=>{
+    const obj = snapshot.val() || {};
+    const map = {};
+    for(const [gid, room] of Object.entries(obj || {})){
+      const messagesObj = room.messages || {};
+      const msgs = Object.entries(messagesObj).map(([id,m])=>({id,...m}));
+      msgs.sort((a,b)=> (a.ts||0)-(b.ts||0));
+      map[gid] = msgs;
+    }
+    state.messagesCache['groups'] = map;
+    renderMessagesForCurrentChat();
+  });
+}
+
+async function enforcePublicLimit(){
+  const msgs = state.messagesCache['public'] || [];
+  if(msgs.length > PUBLIC_CHAT_LIMIT){
+    const toRemove = msgs.slice(0, msgs.length - PUBLIC_CHAT_LIMIT);
+    for(const m of toRemove){
+      await remove(dbRef(`messages/public/${m.id}`));
+    }
+  }
+}
+
+async function sendMessage({to='public', text='', file=null, poll=null}){
+  if(!state.me) { alert('Please login'); openLoginOverlay(); return; }
+  if(text.trim()==='' && !file && !poll){ return false; }
+  if(to === 'public' && !canSendToPublic()){
+    alert(`Please wait ${Math.ceil(getPublicCooldownRemaining()/1000)} more second(s) before posting in public chat.`);
+    return false;
+  }
+  const censored = censorText(text);
+  const message = {
+    fromId: state.me.id,
+    fromUsername: state.me.username,
+    avatar: state.me.avatar,
+    text: censored,
+    ts: Date.now(),
+    editedAt: null,
+    isGuest: isGuestUser()
+  };
+  if(file) message.file = file;
+  if(poll) message.poll = poll;
+
+  if(to === 'public'){
+    const newRef = push(dbRef('messages/public'));
+    await set(newRef, message);
+    startPublicCooldown();
+    playPing();
+  } else if(to.startsWith('dm:')){
+    const otherId = to.split(':')[1];
+    const dmid = dmId(state.me.id, otherId);
+    const newRef = push(dbRef(`messages/dms/${dmid}/messages`));
+    await set(newRef, message);
+    playPing();
+  } else if(to.startsWith('group:')){
+    const gid = to.split(':')[1];
+    const newRef = push(dbRef(`messages/groups/${gid}/messages`));
+    await set(newRef, message);
+    playPing();
+  } else if(to.startsWith('server:')){
+    const [, serverId, channelId] = to.split(':');
+    const server = state.serversCache[serverId];
+    const channel = server?.channels?.[channelId];
+    if(!server || !channel || !isServerMember(serverId, server) || channel.type === 'voice') return false;
+    const newRef = push(dbRef(`messages/servers/${serverId}/${channelId}/messages`));
+    await set(newRef, message);
+    playPing();
+  }
+  await update(dbRef(`users/${state.me.id}`), { lastActive: Date.now() });
+  return true;
+}
+
+function dmId(a,b){ return [a,b].sort().join('__'); }
+function playPing(){ pingAudio.volume = state.pingVolume; pingAudio.currentTime = 0; pingAudio.play().catch(()=>{}); }
+
+/* Render messages for whichever chat is selected */
+function renderMessagesForCurrentChat(){
+  const sel = state.selectedChat;
+  messagesArea.innerHTML = '';
+  const dmArea = el('#dm-header-area'); if(dmArea) dmArea.style.display = 'none';
+  messageComposer.style.display = '';
+  if(sel === 'home' || sel.startsWith('server:')){
+    ['delete-user-btn','group-options-btn','group-settings-btn'].forEach((id)=> el('#'+id)?.remove());
+  }
+  updateSendButtonState();
+
+  if(sel === 'home'){
+    chatTitle.textContent = 'Home';
+    messageComposer.style.display = 'none';
+    messagesArea.innerHTML = `<div class="voice-room"><div class="voice-room-icon">⌂</div><h2>Welcome home</h2><p>Choose a direct message here, or open a server from the icon rail.</p></div>`;
+    return;
+  } else if(sel === 'public'){
+    const msgs = state.messagesCache['public'] || [];
+    if(msgs.length === 0){
+      messagesArea.innerHTML = `<div class="no-messages">No messages yet in public chat.</div>`;
+      return;
+    }
+    for(const m of msgs){
+      const elNode = messageToElement(m, 'public');
+      messagesArea.appendChild(elNode);
+    }
+  } else if(sel.startsWith('dm:')){
+    const other = sel.split(':')[1];
+    const dmid = dmId(state.me.id, other);
+    const msgs = (state.messagesCache['dms'] && state.messagesCache['dms'][dmid]) || [];
+    if(msgs.length === 0){
+      messagesArea.innerHTML = `<div class="no-messages">No messages yet in this DM.</div>`;
+    } else {
+      for(const m of msgs){
+        const elNode = messageToElement(m, dmid);
+        messagesArea.appendChild(elNode);
+      }
+    }
+    renderHeaderForChat(other);
+  } else if(sel.startsWith('group:')){
+    const gid = sel.split(':')[1];
+    const msgs = (state.messagesCache['groups'] && state.messagesCache['groups'][gid]) || [];
+    if(msgs.length === 0){
+      messagesArea.innerHTML = `<div class="no-messages">No messages yet in this Group DM.</div>`;
+    } else {
+      for(const m of msgs){
+        const elNode = messageToElement(m, gid, true);
+        messagesArea.appendChild(elNode);
+      }
+    }
+    renderHeaderForGroup(gid);
+  } else if(sel.startsWith('server:')){
+    const [, serverId, channelId] = sel.split(':');
+    const server = state.serversCache[serverId];
+    const channel = server?.channels?.[channelId];
+    if(!server || !channel || !isServerMember(serverId, server)){
+      viewHome();
+      return;
+    }
+    chatTitle.textContent = `${channel.type === 'voice' ? '⌕' : '#'} ${channel.name || channelId}`;
+    if(channel.type === 'voice'){
+      messageComposer.style.display = 'none';
+      renderVoiceRoom(serverId, channelId, channel);
+      return;
+    }
+    const msgs = state.messagesCache.servers?.[serverId]?.[channelId] || [];
+    if(msgs.length === 0){
+      messagesArea.innerHTML = `<div class="no-messages">This is the beginning of #${escapeHtml(channel.name || channelId)}.</div>`;
+    } else {
+      for(const message of msgs){
+        messagesArea.appendChild(messageToElement(message, sel));
+      }
+    }
+  }
+  messagesArea.scrollTop = messagesArea.scrollHeight;
+}
+
+function renderHeaderForChat(otherId){
+  const existing = el('#delete-user-btn');
+  if(existing) existing.remove();
+
+  const u = state.usersCache[otherId] || { username: 'Unknown' };
+  chatTitle.textContent = `DM with ${u.username}`;
+
+  if(state.me && state.me.username === ADMIN_USERNAME){
+    const btn = document.createElement('button');
+    btn.id = 'delete-user-btn';
+    btn.className = 'admin-delete';
+    btn.textContent = 'Delete User';
+    btn.onclick = ()=> deleteUserAndMessages(otherId);
+    headerControls.appendChild(btn);
+  }
+}
+
+function renderHeaderForGroup(gid){
+  const existing = el('#group-options-btn');
+  if(existing) existing.remove();
+  const creatorExisting = el('#group-settings-btn');
+  if(creatorExisting) creatorExisting.remove();
+  const g = state.groupsCache[gid] || { title: 'Group' };
+  chatTitle.textContent = `${g.title} (Group)`;
+
+  if(state.me && g.creator === state.me.id){
+    const btn = document.createElement('button');
+    btn.id = 'group-settings-btn';
+    btn.className = 'btn ghost small';
+    btn.textContent = 'Group Settings';
+    btn.onclick = ()=> openGroupSettingsPanel(gid);
+    headerControls.appendChild(btn);
+  }
+
+  // if current user is the creator or admin, they could delete group (optional)
+  if(state.me && state.me.username === ADMIN_USERNAME){
+    const btn = document.createElement('button');
+    btn.id = 'group-options-btn';
+    btn.className = 'admin-delete';
+    btn.textContent = 'Delete Group';
+    btn.onclick = async ()=> {
+      if(confirm('Delete this group (and its messages)?')) {
+        await remove(dbRef(`groups/${gid}`));
+        await remove(dbRef(`messages/groups/${gid}`));
+      }
+    };
+    headerControls.appendChild(btn);
+  }
+}
+
+function voiceParticipants(serverId, channelId){
+  return state.voicePresence?.[serverId]?.[channelId]?.participants || {};
+}
+
+function renderVoiceRoom(serverId, channelId, channel){
+  const participants = voiceParticipants(serverId, channelId);
+  const names = Object.entries(participants);
+  const joined = state.voice?.serverId === serverId && state.voice?.channelId === channelId;
+  const memberHtml = names.length
+    ? names.map(([id, profile])=> `<div class="voice-member"><img src="${profile.avatar || defaultAvatar(profile.username)}" alt="" /><span>${escapeHtml(profile.username || state.usersCache[id]?.username || 'Member')}</span></div>`).join('')
+    : '<div class="small">No one is in voice yet.</div>';
+  messagesArea.innerHTML = `
+    <div class="voice-room">
+      <div class="voice-room-icon">⌕</div>
+      <h2>${escapeHtml(channel.name || 'Voice channel')}</h2>
+      <p>Join the room to talk with people in this server.</p>
+      <div class="voice-members">${memberHtml}</div>
+      <div class="voice-controls">
+        <button id="voice-join-btn" class="btn" type="button">${joined ? 'Leave voice' : 'Join voice'}</button>
+        ${joined ? `<button id="voice-mute-btn" class="btn ghost" type="button">${state.voice.muted ? 'Unmute microphone' : 'Mute microphone'}</button>` : ''}
+      </div>
+      <div class="voice-status">${state.voice?.status || 'Your microphone stays off until you join.'}</div>
+    </div>`;
+  const joinButton = el('#voice-join-btn');
+  joinButton?.addEventListener('click', ()=> joined ? leaveVoice() : joinVoice(serverId, channelId));
+  el('#voice-mute-btn')?.addEventListener('click', toggleVoiceMute);
+}
+
+function voicePath(serverId, channelId){
+  return `voice/${serverId}/${channelId}`;
+}
+
+function getVoicePeer(remoteId){
+  const voice = state.voice;
+  if(!voice) return null;
+  if(voice.peers.has(remoteId)) return voice.peers.get(remoteId);
+  const peer = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+  voice.stream.getTracks().forEach((track)=> peer.addTrack(track, voice.stream));
+  peer.onicecandidate = ({ candidate })=>{
+    if(candidate) sendVoiceSignal(remoteId, 'candidate', candidate.toJSON ? candidate.toJSON() : candidate).catch(console.error);
+  };
+  peer.ontrack = ({ streams })=>{
+    const stream = streams[0];
+    if(!stream) return;
+    let audio = voice.audioElements.get(remoteId);
+    if(!audio){
+      audio = document.createElement('audio');
+      audio.autoplay = true;
+      audio.playsInline = true;
+      audio.style.display = 'none';
+      document.body.appendChild(audio);
+      voice.audioElements.set(remoteId, audio);
+    }
+    audio.srcObject = stream;
+    audio.play().catch(()=>{});
+  };
+  peer.onconnectionstatechange = ()=>{
+    if(['failed','closed'].includes(peer.connectionState)){
+      const audio = voice.audioElements.get(remoteId);
+      audio?.remove();
+      voice.audioElements.delete(remoteId);
+    }
+  };
+  voice.peers.set(remoteId, peer);
+  return peer;
+}
+
+async function sendVoiceSignal(to, type, data){
+  const voice = state.voice;
+  if(!voice || !state.me) return;
+  const signal = push(dbRef(`${voicePath(voice.serverId, voice.channelId)}/signals/${to}`));
+  await set(signal, { from: state.me.id, type, data, ts: Date.now() });
+}
+
+async function createVoiceOffer(remoteId){
+  const voice = state.voice;
+  if(!voice || voice.offeredTo.has(remoteId) || remoteId === state.me?.id) return;
+  voice.offeredTo.add(remoteId);
+  try{
+    const peer = getVoicePeer(remoteId);
+    const offer = await peer.createOffer();
+    await peer.setLocalDescription(offer);
+    await sendVoiceSignal(remoteId, 'offer', { type: offer.type, sdp: offer.sdp });
+  }catch(err){
+    console.error('Voice offer failed', err);
+    voice.status = 'Could not connect to someone in this room.';
+    renderMessagesForCurrentChat();
+  }
+}
+
+async function applyQueuedCandidates(remoteId, peer){
+  const queue = state.voice?.pendingCandidates.get(remoteId) || [];
+  for(const candidate of queue){
+    try{ await peer.addIceCandidate(new RTCIceCandidate(candidate)); }catch(err){ console.warn('Voice candidate rejected', err); }
+  }
+  state.voice?.pendingCandidates.delete(remoteId);
+}
+
+async function handleVoiceSignal(signalId, signal){
+  const voice = state.voice;
+  if(!voice || !signal?.from || signal.from === state.me?.id) return;
+  const peer = getVoicePeer(signal.from);
+  try{
+    if(signal.type === 'candidate'){
+      if(peer.remoteDescription){
+        await peer.addIceCandidate(new RTCIceCandidate(signal.data));
+      }else{
+        const queue = voice.pendingCandidates.get(signal.from) || [];
+        queue.push(signal.data);
+        voice.pendingCandidates.set(signal.from, queue);
+      }
+    } else if(signal.type === 'offer'){
+      await peer.setRemoteDescription(new RTCSessionDescription(signal.data));
+      await applyQueuedCandidates(signal.from, peer);
+      const answer = await peer.createAnswer();
+      await peer.setLocalDescription(answer);
+      await sendVoiceSignal(signal.from, 'answer', { type: answer.type, sdp: answer.sdp });
+    } else if(signal.type === 'answer'){
+      await peer.setRemoteDescription(new RTCSessionDescription(signal.data));
+      await applyQueuedCandidates(signal.from, peer);
+    }
+  }catch(err){
+    console.error('Voice signal failed', err);
+  }finally{
+    await remove(dbRef(`${voicePath(voice.serverId, voice.channelId)}/signals/${state.me.id}/${signalId}`)).catch(()=>{});
+  }
+}
+
+function connectVoicePeers(){
+  const voice = state.voice;
+  if(!voice || !state.me) return;
+  const participants = voiceParticipants(voice.serverId, voice.channelId);
+  for(const remoteId of Object.keys(participants)){
+    if(remoteId !== state.me.id && state.me.id.localeCompare(remoteId) < 0){
+      createVoiceOffer(remoteId);
+    }
+  }
+}
+
+async function joinVoice(serverId, channelId){
+  if(!navigator.mediaDevices?.getUserMedia){
+    alert('Voice chat needs a browser that supports microphone access.');
+    return;
+  }
+  if(state.voice) await leaveVoice();
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    const participantRef = dbRef(`${voicePath(serverId, channelId)}/participants/${state.me.id}`);
+    state.voice = {
+      serverId, channelId, stream, participantRef, peers: new Map(), audioElements: new Map(),
+      pendingCandidates: new Map(), offeredTo: new Set(), processedSignals: new Set(), muted: false,
+      status: 'Connecting to voice…', unsubscribeSignals: null
+    };
+    await set(participantRef, { username: state.me.username, avatar: state.me.avatar || '', joinedAt: Date.now() });
+    await onDisconnect(participantRef).remove();
+    state.voice.unsubscribeSignals = onValue(dbRef(`${voicePath(serverId, channelId)}/signals/${state.me.id}`), (snapshot)=>{
+      const signals = snapshot.val() || {};
+      for(const [signalId, signal] of Object.entries(signals)){
+        if(!state.voice?.processedSignals.has(signalId)){
+          state.voice.processedSignals.add(signalId);
+          handleVoiceSignal(signalId, signal);
+        }
+      }
+    });
+    state.voice.status = 'You are in voice. Share this channel with a server member.';
+    connectVoicePeers();
+    renderMessagesForCurrentChat();
+  }catch(err){
+    console.error('Voice join failed', err);
+    alert('Microphone access was not available. Allow it in your browser and try again.');
+  }
+}
+
+function toggleVoiceMute(){
+  const voice = state.voice;
+  if(!voice) return;
+  voice.muted = !voice.muted;
+  voice.stream.getAudioTracks().forEach((track)=> { track.enabled = !voice.muted; });
+  renderMessagesForCurrentChat();
+}
+
+async function leaveVoice(){
+  const voice = state.voice;
+  if(!voice) return;
+  state.voice = null;
+  voice.unsubscribeSignals?.();
+  voice.peers.forEach((peer)=> peer.close());
+  voice.audioElements.forEach((audio)=> audio.remove());
+  voice.stream.getTracks().forEach((track)=> track.stop());
+  await remove(voice.participantRef).catch(()=>{});
+  await remove(dbRef(`${voicePath(voice.serverId, voice.channelId)}/signals/${state.me?.id}`)).catch(()=>{});
+  if(isVoiceSelection(state.selectedChat)) renderMessagesForCurrentChat();
+}
+
+/* Message element */
+function messageToElement(m, contextId, isGroup){
+  const wrapper = document.createElement('div');
+  wrapper.className = 'message';
+  let highlightClass = '';
+  if(state.me && m.text && m.text.toLowerCase().includes('@'+state.me.username.toLowerCase())){
+    highlightClass = 'mentioned';
+  }
+  wrapper.innerHTML = `
+    <img class="avatar" src="${m.avatar || defaultAvatar(m.fromUsername)}" />
+    <div class="body ${highlightClass}">
+      <div class="meta">
+        <div class="username">${escapeHtml(m.fromUsername)}</div>
+        <div class="timestamp">${formatTimestamp(m.ts)}${m.editedAt ? ' (edited)' : ''}</div>
+      </div>
+      <div class="text">${formatTextWithLinksAndMentions(m.text)}</div>
+      ${m.file ? renderFileEmbedHtml(m.file) : ''}
+      ${renderSupportedEmbedsHtml(m.text)}
+    </div>
+  `;
+  const body = wrapper.querySelector('.body');
+  const pollElement = renderPollElement(m, contextId, isGroup);
+  if(pollElement) body.appendChild(pollElement);
+  const footer = document.createElement('div');
+  footer.className = 'message-footer';
+
+  const reactionsRow = document.createElement('div');
+  reactionsRow.className = 'reactions';
+  for(const reaction of normalizeReactions(m.reactions || {})){
+    const reactionBtn = document.createElement('button');
+    reactionBtn.type = 'button';
+    reactionBtn.className = `reaction-btn${reaction.hasMine ? ' active' : ''}`;
+    reactionBtn.textContent = `${reaction.emoji} ${reaction.count}`;
+    reactionBtn.onclick = async (ev)=>{
+      ev.stopPropagation();
+      await toggleReaction(contextId, isGroup, m.id, reaction.emoji);
+    };
+    reactionsRow.appendChild(reactionBtn);
+  }
+  footer.appendChild(reactionsRow);
+
+  const reactionAddWrap = document.createElement('div');
+  reactionAddWrap.className = 'reaction-add-wrap';
+  const reactionAddBtn = document.createElement('button');
+  reactionAddBtn.type = 'button';
+  reactionAddBtn.className = 'message-action-btn';
+  reactionAddBtn.textContent = 'React';
+  const reactionPicker = document.createElement('div');
+  reactionPicker.className = 'reaction-picker';
+  for(const emoji of SAFE_REACTION_OPTIONS){
+    const option = document.createElement('button');
+    option.type = 'button';
+    option.className = 'reaction-picker-btn';
+    option.textContent = emoji;
+    option.onclick = async (ev)=>{
+      ev.stopPropagation();
+      reactionPicker.classList.remove('open');
+      await toggleReaction(contextId, isGroup, m.id, emoji);
+    };
+    reactionPicker.appendChild(option);
+  }
+  reactionAddBtn.onclick = (ev)=>{
+    ev.stopPropagation();
+    document.querySelectorAll('.reaction-picker.open').forEach((node)=>{
+      if(node !== reactionPicker) node.classList.remove('open');
+    });
+    reactionPicker.classList.toggle('open');
+  };
+  reactionAddWrap.appendChild(reactionAddBtn);
+  reactionAddWrap.appendChild(reactionPicker);
+  footer.appendChild(reactionAddWrap);
+
+  if(state.me && (state.me.id === m.fromId || state.me.username === ADMIN_USERNAME)){
+    const actions = document.createElement('div');
+    actions.className = 'message-actions';
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'message-action-btn';
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.onclick = async (ev)=>{
+      ev.stopPropagation();
+      if(state.me.username !== ADMIN_USERNAME && !confirm('Delete this message?')) return;
+      await remove(dbRef(getMessagePath(contextId, isGroup, m.id)));
+    };
+
+    if(state.me.id === m.fromId){
+      const editBtn = document.createElement('button');
+      editBtn.className = 'message-action-btn';
+      editBtn.textContent = 'Edit';
+      editBtn.onclick = async (ev)=>{
+        ev.stopPropagation();
+        const nextText = prompt('Edit your message:', m.text || '');
+        if(nextText === null) return;
+        if(!nextText.trim() && !m.file){
+          alert('Messages need text or an attached file.');
+          return;
+        }
+        await update(dbRef(getMessagePath(contextId, isGroup, m.id)), {
+          text: censorText(nextText),
+          editedAt: Date.now()
+        });
+      };
+      actions.appendChild(editBtn);
+    }
+    actions.appendChild(deleteBtn);
+    footer.appendChild(actions);
+  }
+  body.appendChild(footer);
+  return wrapper;
+}
+
+function renderFileEmbedHtml(file){
+  const type = file.type || '';
+  const name = escapeHtml(file.name || 'file');
+  const data = file.data;
+  let html = `<div class="file-embed">`;
+  if(type.startsWith('image/')){
+    html += `<img src="${data}" style="max-width:100%;border-radius:8px;display:block" /><div><a download="${name}" href="${data}">Download</a></div>`;
+  } else if(type.startsWith('video/')){
+    html += `<video controls style="max-width:100%;display:block"><source src="${data}" type="${type}">Your browser doesn't support video</video><div><a download="${name}" href="${data}">Download</a></div>`;
+  } else if(type.startsWith('audio/')){
+    html += `<audio controls><source src="${data}" type="${type}">Your browser doesn't support audio</audio><div><a download="${name}" href="${data}">Download</a></div>`;
+  } else {
+    html += `<div style="overflow-wrap:anywhere">${name} <a download="${name}" href="${data}">Download</a></div>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+/* Text formatting: links + mentions */
+function escapeHtml(str=''){ return String(str).replace(/[&<>"']/g, (m)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','"':'&quot;','\'':'&#39;' }[m])); }
+
+function formatTextWithLinksAndMentions(text=''){
+  if(!text) return '';
+  let out = escapeHtml(text);
+  // URLs -> clickable links
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  out = out.replace(urlRegex, (m)=>`<a href="${m}" target="_blank" style="color:var(--accent)">${escapeHtml(m)}</a>`);
+  // @mentions -> styled span
+  out = out.replace(/@([a-zA-Z0-9\-_]+)/g, (m, uname)=>`<span class="atlink">@${escapeHtml(uname)}</span>`);
+  return out;
+}
+
+/* Unread management + title badge */
+function updateUnreadBadges(){
+  const unreadRooms = Object.keys(state.unread).filter((key)=> state.unread[key] > 0);
+  document.title = unreadRooms.length ? `[${unreadRooms.length}] HappeeChat3` : 'HappeeChat3';
+  renderChatList();
+  renderSidebarForView();
+}
+
+function markReadCurrentChat(){
+  if(!state._lastSeen) state._lastSeen = {};
+  const sel = state.selectedChat;
+  if(sel === 'public'){
+    state._lastSeen['public'] = (state.messagesCache['public']||[]).length;
+    state.unread.public = 0;
+  } else if(sel.startsWith('dm:')){
+    const other = sel.split(':')[1];
+    const dmid = dmId(state.me.id, other);
+    state._lastSeen[sel] = (state.messagesCache['dms'] && state.messagesCache['dms'][dmid] || []).length;
+    state.unread[sel] = 0;
+  } else if(sel.startsWith('group:')){
+    const gid = sel.split(':')[1];
+    state._lastSeen[sel] = (state.messagesCache['groups'] && state.messagesCache['groups'][gid] || []).length;
+    state.unread[sel] = 0;
+  } else if(sel.startsWith('server:')){
+    const [, serverId, channelId] = sel.split(':');
+    state._lastSeen[sel] = state.messagesCache.servers?.[serverId]?.[channelId]?.length || 0;
+    state.unread[sel] = 0;
+  }
+  updateUnreadBadges();
+}
+
+/* File attachment handling */
+attachBtn.addEventListener('click', (ev)=>{
+  ev.stopPropagation();
+  toggleComposerMenu(!composerMenu.classList.contains('open'));
+});
+composerMenuFileBtn.addEventListener('click', ()=>{
+  toggleComposerMenu(false);
+  fileInput.click();
+});
+composerMenuPollBtn.addEventListener('click', openPollModal);
+composerMenuGifBtn.addEventListener('click', openGifModal);
+emojiPickerToggleBtn.addEventListener('click', (ev)=>{
+  ev.stopPropagation();
+  emojiPicker.classList.toggle('open');
+});
+fileInput.addEventListener('change', async (ev)=>{
+  const f = ev.target.files[0];
+  if(!f) return;
+  if(f.size > 8*1024*1024){ alert('File exceeds 8MB'); return; }
+  const base64 = await fileToBase64(f);
+  txtMessage.value += ` [file:${f.name}] `;
+  fileInput._pendingFile = { name: f.name, type: f.type, data: base64 };
+  toggleComposerMenu(false);
+});
+closePollModalBtn.addEventListener('click', closePollModal);
+createPollConfirmBtn.addEventListener('click', async ()=>{
+  const question = (pollQuestionInput.value || '').trim();
+  const options = pollOptionInputs.map((input)=> (input.value || '').trim()).filter(Boolean);
+  if(!question){
+    pollModalMsg.textContent = 'Enter a poll question.';
+    return;
+  }
+  if(options.length < 2){
+    pollModalMsg.textContent = 'Add at least 2 options.';
+    return;
+  }
+  const sent = await sendMessage({
+    to: state.selectedChat,
+    poll: buildPollPayload(question, options)
+  });
+  if(sent){
+    closePollModal();
+    markReadCurrentChat();
+  }
+});
+closeGifModalBtn.addEventListener('click', closeGifModal);
+gifSearchBtn.addEventListener('click', async ()=>{ await searchGiphyGifs(gifSearchInput.value); });
+gifSearchInput.addEventListener('keydown', async (ev)=>{
+  if(ev.key === 'Enter'){
+    ev.preventDefault();
+    await searchGiphyGifs(gifSearchInput.value);
+  }
+});
+pollModal.addEventListener('click', (ev)=>{
+  if(ev.target === pollModal) closePollModal();
+});
+gifModal.addEventListener('click', (ev)=>{
+  if(ev.target === gifModal) closeGifModal();
+});
+
+function fileToBase64(file){
+  return new Promise((res, rej)=>{
+    const reader = new FileReader();
+    reader.onload = ()=> res(reader.result);
+    reader.onerror = ()=> rej('err');
+    reader.readAsDataURL(file);
+  });
+}
+
+/* Send handlers */
+sendBtn.addEventListener('click', async ()=>{ await handleSend(); });
+txtMessage.addEventListener('keydown', async (ev)=>{
+  if(ev.key === 'Enter' && !ev.shiftKey){
+    ev.preventDefault();
+    await handleSend();
+  }
+});
+mobileChatToggleBtn && mobileChatToggleBtn.addEventListener('click', ()=>{
+  setMobileChatDrawer(!document.body.classList.contains('mobile-chats-open'));
+});
+mobileSidebarBackdrop && mobileSidebarBackdrop.addEventListener('click', ()=> setMobileChatDrawer(false));
+document.addEventListener('click', (ev)=>{
+  if(composerMenu && !composerMenu.contains(ev.target) && ev.target !== attachBtn){
+    toggleComposerMenu(false);
+  }
+  if(emojiPicker && !emojiPicker.contains(ev.target) && ev.target !== emojiPickerToggleBtn){
+    emojiPicker.classList.remove('open');
+  }
+  if(!(ev.target instanceof Element) || !ev.target.closest('.reaction-add-wrap')){
+    document.querySelectorAll('.reaction-picker.open').forEach((node)=> node.classList.remove('open'));
+  }
+});
+
+async function handleSend(){
+  const text = txtMessage.value;
+  const pendingFile = fileInput._pendingFile || null;
+  const to = state.selectedChat;
+  const file = pendingFile;
+  const sent = await sendMessage({ to, text, file });
+  if(!sent){
+    return;
+  }
+  txtMessage.value = '';
+  fileInput.value = ''; fileInput._pendingFile = null;
+  markReadCurrentChat();
+  updateSendButtonState();
+}
+
+/* Chat selection / UI */
+function selectChat(chatId){
+  if(state.voice && chatId !== `server:${state.voice.serverId}:${state.voice.channelId}`){
+    leaveVoice();
+  }
+  if(chatId.startsWith('dm:')) state.activeServerId = null;
+  state.selectedChat = chatId;
+  if(chatId === 'public') chatTitle.textContent = 'Public Chat';
+  else if(chatId.startsWith('dm:')){
+    const id = chatId.split(':')[1];
+    const u = state.usersCache[id] || { username: 'Unknown' };
+    chatTitle.textContent = `DM with ${u.username}`;
+    const existing = el('#delete-user-btn'); if(existing) existing.remove();
+  } else if(chatId.startsWith('group:')){
+    const gid = chatId.split(':')[1];
+    const g = state.groupsCache[gid] || { title: 'Group' };
+    chatTitle.textContent = `${g.title} (Group)`;
+    const existing = el('#group-options-btn'); if(existing) existing.remove();
+  } else if(chatId.startsWith('server:')){
+    const [, serverId] = chatId.split(':');
+    state.activeServerId = serverId;
+  }
+  ['delete-user-btn','group-options-btn','group-settings-btn'].forEach((id)=> el('#'+id)?.remove());
+  renderServerRail();
+  renderSidebarForView();
+  renderMessagesForCurrentChat();
+  markReadCurrentChat();
+  updateSendButtonState();
+  if(isMobileView()){
+    setMobileChatDrawer(false);
+  }
+}
+
+/* Delete user admin */
+async function purgeUserData(userId){
+  await update(dbRef(`users/${userId}`), { deleted: true });
+  const pub = state.messagesCache['public'] || [];
+  for(const m of pub){
+    if(m.fromId === userId) await remove(dbRef(`messages/public/${m.id}`));
+  }
+  const dms = state.messagesCache['dms'] || {};
+  for(const dmid of Object.keys(dms)){
+    if(dmid.includes(userId)){
+      await remove(dbRef(`messages/dms/${dmid}`));
+    } else {
+      for(const m of dms[dmid]){
+        if(m.fromId === userId){
+          await remove(dbRef(`messages/dms/${dmid}/messages/${m.id}`));
+        }
+      }
+    }
+  }
+  const groups = state.groupsCache || {};
+  for(const [gid, g] of Object.entries(groups)){
+    if(!g || !g.members) continue;
+    if(g.members.indexOf(userId) !== -1){
+      const newMembers = g.members.filter(x=>x!==userId);
+      if(newMembers.length === 0){
+        await remove(dbRef(`groups/${gid}`));
+        await remove(dbRef(`messages/groups/${gid}`));
+      } else {
+        await update(dbRef(`groups/${gid}`), { members: newMembers });
+      }
+    }
+  }
+  const serverMessages = state.messagesCache.servers || {};
+  for(const [serverId, channels] of Object.entries(serverMessages)){
+    for(const [channelId, messages] of Object.entries(channels || {})){
+      for(const message of messages){
+        if(message.fromId === userId){
+          await remove(dbRef(`messages/servers/${serverId}/${channelId}/messages/${message.id}`));
+        }
+      }
+    }
+  }
+  for(const [serverId, server] of Object.entries(state.serversCache || {})){
+    if(isPublicServer(serverId, server)) continue;
+    if(server.ownerId === userId){
+      await remove(dbRef(`servers/${serverId}`));
+      await remove(dbRef(`messages/servers/${serverId}`));
+      await remove(dbRef(`voice/${serverId}`));
+    } else if(getServerMembers(server).includes(userId)){
+      await remove(dbRef(`servers/${serverId}/members/${userId}`));
+    }
+  }
+}
+
+async function deleteUserAndMessages(userId){
+  if(!state.me || state.me.username !== ADMIN_USERNAME) { alert('Admin only'); return; }
+  if(state.usersCache[userId] && state.usersCache[userId].username === ADMIN_USERNAME){
+    alert('Cannot delete admin user.');
+    return;
+  }
+  if(!confirm('Delete user and all their messages? This is irreversible.')) return;
+  await purgeUserData(userId);
+
+  alert('User deleted and messages removed.');
+}
+
+/* Group creation UI */
+createGroupBtn?.addEventListener('click', ()=>{
+  if(!state.me){ alert('Please login to create groups'); openLoginOverlay(); return; }
+  groupTitleInput.value = '';
+  groupIconPreview.innerHTML = 'icon';
+  groupIconFile.value = '';
+  groupIconBase64 = null;
+  renderGroupUsersInModal();
+  groupModal.style.display = 'flex';
+});
+closeGroupModal.addEventListener('click', ()=> groupModal.style.display = 'none');
+
+groupIconFile.addEventListener('change', async (ev)=>{
+  const f = ev.target.files[0];
+  if(!f) return;
+  if(f.size > 4*1024*1024){ alert('Icon exceeds 4MB'); return; }
+  groupIconBase64 = await fileToBase64(f);
+  groupIconPreview.innerHTML = `<img src="${groupIconBase64}" style="width:48px;height:48px;border-radius:8px;object-fit:cover" />`;
+});
+
+function renderGroupUsersInModal(){
+  if(!groupUsersArea) return;
+  groupUsersArea.innerHTML = '';
+  const users = state.usersCache || {};
+  const entries = Object.entries(users).filter(([id,u])=> !u.deleted);
+  for(const [id,u] of entries){
+    // checkbox item
+    const div = document.createElement('div');
+    div.className = 'user-checkbox';
+    div.innerHTML = `<input type="checkbox" data-uid="${id}" ${id===state.me?.id ? 'checked disabled' : ''} /> <img src="${u.avatar||defaultAvatar(u.username)}" style="width:36px;height:36px;border-radius:6px;object-fit:cover"/> <div style="display:flex;flex-direction:column"><div style="font-weight:700">${u.username}</div><div class="small">ID: ${id}</div></div>`;
+    groupUsersArea.appendChild(div);
+    div.addEventListener('click', (e)=>{
+      const cb = div.querySelector('input[type=checkbox]');
+      if(cb.disabled) return;
+      cb.checked = !cb.checked;
+    });
+  }
+}
+
+createGroupConfirm.addEventListener('click', async ()=>{
+  const title = (groupTitleInput.value||'').trim();
+  if(!title){ alert('Enter a group title'); return; }
+  const checks = Array.from(groupUsersArea.querySelectorAll('input[type=checkbox]'));
+  const members = checks.filter(c=>c.checked).map(c=>c.dataset.uid);
+  if(members.indexOf(state.me.id) === -1) members.push(state.me.id);
+  const gid = uid();
+  const groupObj = {
+    title,
+    icon: groupIconBase64 || defaultAvatar(title),
+    members,
+    creator: state.me.id,
+    createdAt: Date.now()
+  };
+  await set(dbRef(`groups/${gid}`), groupObj);
+  groupModal.style.display = 'none';
+  fetchUsersAndRender();
+  fetchGroupsAndListen();
+});
+
+/* Server creation, channel management, and members */
+function openServerModal(){
+  if(!state.me){ openLoginOverlay('Log in to create a server.'); return; }
+  serverNameInput.value = '';
+  serverIconFile.value = '';
+  serverIconBase64 = null;
+  serverIconPreview.textContent = 'icon';
+  serverModalMsg.textContent = '';
+  serverModal.style.display = 'flex';
+  serverNameInput.focus();
+}
+
+function closeServerModal(){
+  serverModal.style.display = 'none';
+}
+
+function normalizeChannelName(name){
+  return String(name || '').trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '').replace(/^-+|-+$/g, '').slice(0, 40);
+}
+
+function openChannelModal(){
+  const server = state.serversCache[state.activeServerId];
+  if(!server || server.ownerId !== state.me?.id) return;
+  selectedChannelType = 'text';
+  channelNameInput.value = '';
+  channelModalMsg.textContent = '';
+  channelTypeChoices.forEach((button)=> button.classList.toggle('active', button.dataset.channelType === selectedChannelType));
+  channelModal.style.display = 'flex';
+  channelNameInput.focus();
+}
+
+function renderServerSettingsMembers(serverId){
+  const server = state.serversCache[serverId];
+  if(!server) return;
+  serverSettingsMembers.innerHTML = '';
+  const currentMembers = new Set(getServerMembers(server));
+  for(const [id, user] of Object.entries(state.usersCache || {}).filter(([, user])=> !user.deleted)){
+    const item = document.createElement('label');
+    item.className = 'user-checkbox';
+    const owner = id === server.ownerId;
+    item.innerHTML = `<input type="checkbox" data-server-member="${id}" ${currentMembers.has(id) ? 'checked' : ''} ${owner ? 'disabled' : ''} />
+      <img src="${user.avatar || defaultAvatar(user.username)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover" alt="" />
+      <span style="font-weight:600">${escapeHtml(user.username)}</span><span class="small">${owner ? 'Owner' : ''}</span>`;
+    serverSettingsMembers.appendChild(item);
+  }
+}
+
+function openServerSettings(){
+  const serverId = state.activeServerId;
+  const server = state.serversCache[serverId];
+  if(!server || server.ownerId !== state.me?.id || isPublicServer(serverId, server)) return;
+  serverSettingsPanel.dataset.serverId = serverId;
+  serverSettingsName.value = server.name || '';
+  serverSettingsIconBase64 = server.icon || '';
+  serverSettingsIconPreview.innerHTML = `<img src="${server.icon || defaultAvatar(server.name)}" style="width:48px;height:48px;border-radius:12px;object-fit:cover" alt="" />`;
+  serverSettingsIconFile.value = '';
+  serverSettingsMsg.textContent = '';
+  renderServerSettingsMembers(serverId);
+  showAuthPanel(serverSettingsPanel);
+}
+
+homeButton.addEventListener('click', viewHome);
+createServerBtn.addEventListener('click', openServerModal);
+accountMini.addEventListener('click', ()=> openSettingsPanel());
+serverSettingsBtn.addEventListener('click', openServerSettings);
+addChannelBtn.addEventListener('click', openChannelModal);
+closeServerModalBtn.addEventListener('click', closeServerModal);
+closeChannelModalBtn.addEventListener('click', ()=> channelModal.style.display = 'none');
+closeServerSettingsPanelBtn.addEventListener('click', ()=> showAuthPanel(null));
+serverModal.addEventListener('click', (event)=>{ if(event.target === serverModal) closeServerModal(); });
+channelModal.addEventListener('click', (event)=>{ if(event.target === channelModal) channelModal.style.display = 'none'; });
+
+serverIconFile.addEventListener('change', async (event)=>{
+  const file = event.target.files[0];
+  if(!file) return;
+  if(file.size > 4 * 1024 * 1024){ serverModalMsg.textContent = 'Icon exceeds 4MB.'; return; }
+  serverIconBase64 = await fileToBase64(file);
+  serverIconPreview.innerHTML = `<img src="${serverIconBase64}" style="width:48px;height:48px;border-radius:12px;object-fit:cover" alt="" />`;
+});
+
+serverSettingsIconFile.addEventListener('change', async (event)=>{
+  const file = event.target.files[0];
+  if(!file) return;
+  if(file.size > 4 * 1024 * 1024){ serverSettingsMsg.textContent = 'Icon exceeds 4MB.'; return; }
+  serverSettingsIconBase64 = await fileToBase64(file);
+  serverSettingsIconPreview.innerHTML = `<img src="${serverSettingsIconBase64}" style="width:48px;height:48px;border-radius:12px;object-fit:cover" alt="" />`;
+});
+
+channelTypeChoices.forEach((button)=> button.addEventListener('click', ()=>{
+  selectedChannelType = button.dataset.channelType === 'voice' ? 'voice' : 'text';
+  channelTypeChoices.forEach((choice)=> choice.classList.toggle('active', choice === button));
+}));
+
+createServerConfirmBtn.addEventListener('click', async ()=>{
+  const name = (serverNameInput.value || '').trim().slice(0, 60);
+  if(!name){ serverModalMsg.textContent = 'Give your server a name.'; return; }
+  if(!state.me){ serverModalMsg.textContent = 'Log in before creating a server.'; return; }
+  const serverId = `server_${uid()}`;
+  const server = {
+    name,
+    icon: serverIconBase64 || '',
+    ownerId: state.me.id,
+    members: { [state.me.id]: true },
+    createdAt: Date.now(),
+    channels: { general: { name: 'general', type: 'text', createdAt: Date.now() } }
+  };
+  try{
+    createServerConfirmBtn.disabled = true;
+    createServerConfirmBtn.textContent = 'Creating…';
+    await set(dbRef(`servers/${serverId}`), server);
+    state.serversCache[serverId] = server;
+    closeServerModal();
+    openServer(serverId);
+  }catch(err){
+    console.error(err);
+    serverModalMsg.textContent = 'Could not create the server right now.';
+  }finally{
+    createServerConfirmBtn.disabled = false;
+    createServerConfirmBtn.textContent = 'Create server';
+  }
+});
+
+createChannelConfirmBtn.addEventListener('click', async ()=>{
+  const serverId = state.activeServerId;
+  const server = state.serversCache[serverId];
+  const name = normalizeChannelName(channelNameInput.value);
+  if(!server || server.ownerId !== state.me?.id){ channelModalMsg.textContent = 'Only the server owner can add channels.'; return; }
+  if(!name){ channelModalMsg.textContent = 'Use letters, numbers, hyphens, or underscores for the channel name.'; return; }
+  const existingNames = serverChannels(server).map(([, channel])=> normalizeChannelName(channel.name));
+  if(existingNames.includes(name)){ channelModalMsg.textContent = 'That channel already exists.'; return; }
+  const channelId = `${name}-${uid().slice(-5)}`;
+  try{
+    await set(dbRef(`servers/${serverId}/channels/${channelId}`), { name, type: selectedChannelType, createdAt: Date.now() });
+    channelModal.style.display = 'none';
+  }catch(err){
+    console.error(err);
+    channelModalMsg.textContent = 'Could not create the channel right now.';
+  }
+});
+
+serverSettingsSaveBtn.addEventListener('click', async ()=>{
+  const serverId = serverSettingsPanel.dataset.serverId;
+  const server = state.serversCache[serverId];
+  const name = (serverSettingsName.value || '').trim().slice(0, 60);
+  if(!server || server.ownerId !== state.me?.id || !name){ serverSettingsMsg.textContent = 'Enter a server name.'; return; }
+  const members = { [server.ownerId]: true };
+  serverSettingsMembers.querySelectorAll('input[data-server-member]:checked').forEach((input)=> { members[input.dataset.serverMember] = true; });
+  try{
+    serverSettingsMsg.textContent = 'Saving…';
+    await update(dbRef(`servers/${serverId}`), { name, icon: serverSettingsIconBase64 || '', members });
+    serverSettingsMsg.textContent = 'Saved.';
+    renderServerRail();
+    renderSidebarForView();
+  }catch(err){
+    console.error(err);
+    serverSettingsMsg.textContent = 'Could not save this server.';
+  }
+});
+
+serverSettingsDeleteBtn.addEventListener('click', async ()=>{
+  const serverId = serverSettingsPanel.dataset.serverId;
+  const server = state.serversCache[serverId];
+  if(!server || server.ownerId !== state.me?.id || isPublicServer(serverId, server)) return;
+  if(!confirm(`Delete ${server.name} and all of its channels? This cannot be undone.`)) return;
+  try{
+    await remove(dbRef(`servers/${serverId}`));
+    await remove(dbRef(`messages/servers/${serverId}`));
+    await remove(dbRef(`voice/${serverId}`));
+    showAuthPanel(null);
+    viewHome();
+  }catch(err){
+    console.error(err);
+    serverSettingsMsg.textContent = 'Could not delete this server.';
+  }
+});
+
+/* Auto cleanup */
+async function runCleanup(){
+  const now = Date.now();
+  const pub = state.messagesCache['public'] || [];
+  for(const m of pub){
+    if(now - (m.ts || 0) > MESSAGE_TTL){
+      await remove(dbRef(`messages/public/${m.id}`));
+    }
+  }
+  const dms = state.messagesCache['dms'] || {};
+  for(const [dmid, msgs] of Object.entries(dms)){
+    for(const m of msgs){
+      if(now - (m.ts || 0) > MESSAGE_TTL){
+        await remove(dbRef(`messages/dms/${dmid}/messages/${m.id}`));
+      }
+    }
+  }
+  const groupsMsgs = state.messagesCache['groups'] || {};
+  for(const [gid, msgs] of Object.entries(groupsMsgs)){
+    for(const m of msgs){
+      if(now - (m.ts || 0) > MESSAGE_TTL){
+        await remove(dbRef(`messages/groups/${gid}/messages/${m.id}`));
+      }
+    }
+  }
+  for(const [serverId, channels] of Object.entries(state.messagesCache.servers || {})){
+    for(const [channelId, messages] of Object.entries(channels || {})){
+      for(const message of messages){
+        if(now - (message.ts || 0) > MESSAGE_TTL){
+          await remove(dbRef(`messages/servers/${serverId}/${channelId}/messages/${message.id}`));
+        }
+      }
+    }
+  }
+  const users = state.usersCache || {};
+  for(const [id,u] of Object.entries(users)){
+    if(u.username === ADMIN_USERNAME) continue;
+    if(u.deleted) continue;
+    const last = u.lastActive || u.createdAt || 0;
+    if(now - last > IDLE_USER_TTL){
+      await update(dbRef(`users/${id}`), { deleted: true });
+      for(const m of (state.messagesCache['public']||[])){
+        if(m.fromId === id) await remove(dbRef(`messages/public/${m.id}`));
+      }
+      for(const [dmid, msgs2] of Object.entries(state.messagesCache['dms']||{})){
+        if(dmid.includes(id)){
+          await remove(dbRef(`messages/dms/${dmid}`));
+        } else {
+          for(const m of msgs2){
+            if(m.fromId === id){
+              await remove(dbRef(`messages/dms/${dmid}/messages/${m.id}`));
+            }
+          }
+        }
+      }
+      // remove from groups or delete empty groups
+      for(const [gid, g] of Object.entries(state.groupsCache||{})){
+        if(!g || !g.members) continue;
+        if(g.members.indexOf(id) !== -1){
+          const newM = g.members.filter(x=>x!==id);
+          if(newM.length === 0){
+            await remove(dbRef(`groups/${gid}`));
+            await remove(dbRef(`messages/groups/${gid}`));
+          } else {
+            await update(dbRef(`groups/${gid}`), { members: newM });
+          }
+        }
+      }
+      for(const [serverId, channels] of Object.entries(state.messagesCache.servers || {})){
+        for(const [channelId, messages] of Object.entries(channels || {})){
+          for(const message of messages){
+            if(message.fromId === id){
+              await remove(dbRef(`messages/servers/${serverId}/${channelId}/messages/${message.id}`));
+            }
+          }
+        }
+      }
+      for(const [serverId, server] of Object.entries(state.serversCache || {})){
+        if(isPublicServer(serverId, server)) continue;
+        if(server.ownerId === id){
+          await remove(dbRef(`servers/${serverId}`));
+          await remove(dbRef(`messages/servers/${serverId}`));
+          await remove(dbRef(`voice/${serverId}`));
+        } else if(getServerMembers(server).includes(id)){
+          await remove(dbRef(`servers/${serverId}/members/${id}`));
+        }
+      }
+    }
+  }
+}
+
+/* Censorship & helpers */
+function censorText(s){
+  if(!s) return s;
+  let out = s;
+  for(const w of BLACKLIST){
+    const regex = new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),'ig');
+    out = out.replace(regex, (m)=> '*'.repeat(m.length));
+  }
+  return out;
+}
+function timeAgo(ts){
+  const diff = Date.now() - (ts||0);
+  if(diff < 60*1000) return 'just now';
+  if(diff < 60*60*1000) return Math.floor(diff/60000)+'m';
+  if(diff < 24*60*60*1000) return Math.floor(diff/3600000)+'h';
+  return Math.floor(diff/86400000)+'d';
+}
+
+/* UI interactions */
+settingsVolumeSlider && settingsVolumeSlider.addEventListener('input', (e)=>{
+  const v = clamp(Number(e.target.value)/100, 0, 1);
+  state.pingVolume = v;
+});
+settingsDeleteAccountBtn && settingsDeleteAccountBtn.addEventListener('click', async ()=>{
+  if(!state.me){
+    settingsPanelMsg.textContent = 'Please log in first.';
+    return;
+  }
+  const deletingGuest = isGuestUser();
+  const confirmed = confirm(deletingGuest
+    ? 'Delete this guest profile and all of its messages? This cannot be undone.'
+    : 'Delete your account and all your messages? This cannot be undone.');
+  if(!confirmed) return;
+  try{
+    const userId = state.me.id;
+    if(auth.currentUser){
+      await deleteUser(auth.currentUser);
+    }
+    await purgeUserData(userId);
+    if(state.me?.email){
+      clearProfileDraft(state.me.email);
+    }
+    clearGuestSession();
+    state.me = null;
+    welcomeModal.style.display = 'none';
+    welcomeDoNotShow.checked = false;
+    openLoginOverlay(deletingGuest
+      ? 'Your guest profile was deleted.'
+      : 'Your account was deleted. You can now create a new account with that email.');
+  }catch(err){
+    console.error(err);
+    const code = err?.code || '';
+    if(code === 'auth/requires-recent-login'){
+      settingsPanelMsg.textContent = 'For security, please log out, log back in, and try deleting the account again.';
+      return;
+    }
+    settingsPanelMsg.textContent = 'Could not delete the account right now. Please try again.';
+  }
+});
+/* Startup & listeners */
+function showWelcomePopup(){
+  if(!state.me) return;
+  welcomeDoNotShow.checked = false;
+  welcomeModal.style.display = 'flex';
+}
+
+welcomeOkBtn && welcomeOkBtn.addEventListener('click', async ()=>{
+  if(!state.me) {
+    welcomeModal.style.display = 'none';
+    return;
+  }
+  if(welcomeDoNotShow.checked){
+    await update(dbRef(`users/${state.me.id}`), { hideWelcomePopup: true });
+    state.me.hideWelcomePopup = true;
+    if(isGuestUser()){
+      storeGuestSession(state.me);
+    }
+  }
+  welcomeModal.style.display = 'none';
+});
+
+async function afterLogin(userRecord){
+  state._lastSeen = state._lastSeen || {};
+  await ensurePublicServer().catch((err)=> console.error('Could not set up public server', err));
+  if(!listenersStarted){
+    fetchUsersAndRender();
+    fetchServersAndListen();
+    listenMessages();
+    listenVoicePresence();
+    listenersStarted = true;
+  }
+  await update(dbRef(`users/${state.me.id}`), { lastActive: Date.now() });
+  updateSendButtonState();
+  renderAccountMini();
+  viewHome();
+  if(!(userRecord && userRecord.hideWelcomePopup)){
+    showWelcomePopup();
+  }
+  if(!cleanupIntervalId){
+    cleanupIntervalId = setInterval(()=> runCleanup().catch(()=>{}), 1000 * 60 * 10);
+  }
+  if(!heartbeatIntervalId){
+    heartbeatIntervalId = setInterval(()=> { if(state.me) update(dbRef(`users/${state.me.id}`), { lastActive: Date.now() }); }, 1000 * 60 * 2);
+  }
+}
+
+/* Initial load */
+(function init(){
+  renderEmojiPicker();
+  openLoginOverlay();
+  window.addEventListener('resize', ()=>{
+    if(!isMobileView()){
+      setMobileChatDrawer(false);
+    }
+  });
+  onAuthStateChanged(auth, async (authUser)=>{
+    welcomeModal.style.display = 'none';
+    welcomeDoNotShow.checked = false;
+    if(!authUser){
+      const guestSession = getStoredGuestSession();
+      if(guestSession){
+        try{
+          await startGuestSession(guestSession);
+          return;
+        }catch(err){
+          console.error(err);
+          clearGuestSession();
+        }
+      }
+      state.me = null;
+      openLoginOverlay();
+      return;
+    }
+    if(!authUser.emailVerified){
+      state.me = null;
+      pendingLoginMessage = 'Verify your email from the message Firebase sent, then sign in.';
+      await signOut(auth).catch(()=>{});
+      return;
+    }
+    loginMsg.textContent = '';
+    try{
+      await syncAuthenticatedUser(authUser);
+    }catch(err){
+      console.error(err);
+      loginMsg.textContent = 'Signed in, but failed to load your chat profile.';
+      openLoginOverlay();
+    }
+  });
+
+  window.addEventListener('beforeunload', ()=>{
+    if(state.voice) leaveVoice();
+    if(state.me) update(dbRef(`users/${state.me.id}`), { lastActive: Date.now() });
+  });
+})();
+
+</script>
+</body>
+</html>
