@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>HappeeChat3</title>
-<link rel="icon" type="image/svg+xml" href="https://file.garden/ZfeUWQ_uZRgXD5Ma/backdrop1.svg" />
+<title>HappeeChat</title>
+<link rel="icon" type="image/svg+xml" href="https://file.garden/ZgQZRA_U3BIqPcUo/backdrop1%20(1).svg" />
 <!-- Poppins font -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -325,7 +325,7 @@
     <div class="login-box">
       <div class="auth-home" id="auth-home">
         <div style="display:flex;gap:8px;align-items:center">
-          <div style="font-weight:700">Welcome to HappeeChat3</div>
+          <div style="font-weight:700">Welcome to HappeeChat</div>
           <div class="small" style="margin-left:auto">Firebase Auth</div>
         </div>
         <div class="small">Choose an option to sign in or make a new account.</div>
@@ -547,8 +547,8 @@
 
   <div class="modal-backdrop" id="welcome-modal">
     <div class="modal notice-modal">
-      <div style="font-weight:700;font-size:18px">Welcome to HappeeChat3</div>
-      <div class="notice-text" style="margin-top:10px">Welcome to HappeeChat3, a discord clone built by AI. Check out <a href="https://100happee.github.io" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">https://100happee.github.io</a> for more stuff like this. Rules: Don't swear, or have violence. Swearing or violence will have your chat deleted, and spamming will end in a ban. This chat website is usually only used for school purposes. Follow the rules and have fun!</div>
+      <div style="font-weight:700;font-size:18px">Welcome to HappeeChat</div>
+      <div class="notice-text" style="margin-top:10px">Welcome to HappeeChat, a discord clone built by AI. Check out <a href="https://100happee.github.io" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">https://100happee.github.io</a> for more stuff like this. Rules: Don't swear, or have violence. Swearing or violence will have your chat deleted, and spamming will end in a ban. This chat website is usually only used for school purposes. Follow the rules and have fun!</div>
       <label class="notice-check">
         <input type="checkbox" id="welcome-do-not-show" />
         <span>Do not show this again</span>
@@ -566,7 +566,7 @@
 <!-- Firebase SDK (modular) -->
 <script type="module">
 /* ============================
-   HappeeChat2 — Single-file app (with Group DM)
+   HappeeChat — Single-file app (with Group DM)
    Based on original file (included in this repo). Group DM feature:
    - "Make Group DM" button opens modal to choose members, title, icon.
    - Groups stored under /groups in Firebase. Visible only to members.
@@ -858,7 +858,7 @@ async function ensurePublicServer(){
   const existing = snapshot.val();
   if(!existing){
     await set(publicRef, {
-      name: 'HappeeChat3 Community',
+      name: 'HappeeChat Community',
       icon: '',
       isPublic: true,
       ownerId: 'system',
@@ -1722,7 +1722,7 @@ signupSubmitBtn.addEventListener('click', async ()=>{
     await sendEmailVerification(cred.user);
     await signOut(auth);
     signupPanelMsg.textContent = '';
-    signupInfoText.textContent = `Your HappeeChat3 account was created. You may need to check spam folders on email, resend confirmation, or wait a few minutes. Check ${email} for the verification email before logging in.`;
+    signupInfoText.textContent = `Your HappeeChat account was created. You may need to check spam folders on email, resend confirmation, or wait a few minutes. Check ${email} for the verification email before logging in.`;
     showAuthPanel(signupInfoPanel);
   }catch(err){
     pendingSignupProfile = null;
@@ -2484,7 +2484,7 @@ function formatTextWithLinksAndMentions(text=''){
 /* Unread management + title badge */
 function updateUnreadBadges(){
   const unreadRooms = Object.keys(state.unread).filter((key)=> state.unread[key] > 0);
-  document.title = unreadRooms.length ? `[${unreadRooms.length}] HappeeChat3` : 'HappeeChat3';
+  document.title = unreadRooms.length ? `[${unreadRooms.length}] HappeeChat` : 'HappeeChat';
   renderChatList();
   renderSidebarForView();
 }
